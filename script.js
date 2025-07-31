@@ -1,9 +1,9 @@
 // 定義構面和因素
 const dimensions = {
-    A: { name: "科技機會主義", description: "利用新技術帶來的機會來推動創新和增長。" },
+    A: { name: "科技機會主義", description: "利用新技術所帶來的機會，來推動組織的創新與成長。" },
     B: { name: "資源管弦化", description: "有效配置和整合資源以提升組織效率和能力。" },
     C: { name: "IT人員能力", description: "IT專業人員的技術和行為技能，用於支持和推動企業變革。" },
-    D: { name: "數位轉型", description: "通過技術革新來重塑企業運營和商業模式，以提高競爭力。" },
+    D: { name: "數位轉型", description: "透過技術革新來重塑企業運營和商業模式，以提高競爭力。" },
     E: { name: "組織機動性", description: "企業快速適應市場變化和抓住機遇的能力。" }
 };
 
@@ -1125,9 +1125,9 @@ function prevFactorQuestion() {
     }
 }
 
-// 選擇影響程度分數
+// 選擇影響程度分數 - 獨立選擇，不進行同步
 function selectImpactLevel(button, name, value) {
-    // 重置同組內所有按鈕
+    // 重置同組內所有按鈕（只重置當前方向的按鈕）
     const container = button.closest('.impact-level');
     const buttons = container.querySelectorAll('.impact-btn');
     buttons.forEach(btn => {
@@ -1144,6 +1144,8 @@ function selectImpactLevel(button, name, value) {
     if (hiddenInput) {
         hiddenInput.value = value;
     }
+    
+    console.log(`選擇影響程度: ${name} = ${value} (獨立選擇，不進行同步)`);
     
     // 保存答案
     if (name.startsWith('dim_')) {
@@ -1350,96 +1352,11 @@ function validateStep5() {
     }
 }
 
-// 修正雙向同步功能 - 使用更精確的選擇器
+// 刪除雙向同步功能 - 讓用戶可以獨立選擇分數
 function setupBidirectionalSync(prefix, x, y) {
-    console.log(`設置雙向同步: ${prefix}_${x}_${y}`);
-    
-    const forwardContainer = document.getElementById(`${prefix}_forward_${x}_${y}_container`);
-    const backwardContainer = document.getElementById(`${prefix}_backward_${x}_${y}_container`);
-    
-    if (forwardContainer && backwardContainer) {
-        const forwardButtons = forwardContainer.querySelectorAll('.impact-btn');
-        const backwardButtons = backwardContainer.querySelectorAll('.impact-btn');
-        
-        console.log(`找到正向影響按鈕: ${forwardButtons.length} 個`);
-        console.log(`找到反向影響按鈕: ${backwardButtons.length} 個`);
-        
-        // 為正向影響按鈕添加同步事件
-        forwardButtons.forEach(btn => {
-            btn.addEventListener('click', function() {
-                const value = this.textContent;
-                console.log(`正向影響按鈕點擊: ${value}`);
-                
-                // 找到對應的反向影響按鈕並自動選中
-                const backwardBtn = backwardContainer.querySelector(`.impact-btn:nth-child(${value})`);
-                if (backwardBtn) {
-                    // 重置反向影響按鈕狀態
-                    const backwardBtns = backwardContainer.querySelectorAll('.impact-btn');
-                    backwardBtns.forEach(b => {
-                        b.classList.remove('btn-primary');
-                        b.classList.add('btn-outline-secondary');
-                    });
-                    
-                    // 選中對應的反向影響按鈕
-                    backwardBtn.classList.remove('btn-outline-secondary');
-                    backwardBtn.classList.add('btn-primary');
-                    
-                    // 更新反向影響的隱藏輸入值
-                    const backwardInput = backwardContainer.querySelector('input[type="hidden"]');
-                    if (backwardInput) {
-                        backwardInput.value = value;
-                    }
-                    
-                    console.log(`自動同步反向影響: ${value}`);
-                }
-                
-                // 調用驗證函數
-                if (prefix === 'dim') {
-                    validateStep4();
-                } else if (prefix === 'factor') {
-                    validateStep5();
-                }
-            });
-        });
-        
-        // 為反向影響按鈕添加同步事件
-        backwardButtons.forEach(btn => {
-            btn.addEventListener('click', function() {
-                const value = this.textContent;
-                console.log(`反向影響按鈕點擊: ${value}`);
-                
-                // 找到對應的正向影響按鈕並自動選中
-                const forwardBtn = forwardContainer.querySelector(`.impact-btn:nth-child(${value})`);
-                if (forwardBtn) {
-                    // 重置正向影響按鈕狀態
-                    const forwardBtns = forwardContainer.querySelectorAll('.impact-btn');
-                    forwardBtns.forEach(b => {
-                        b.classList.remove('btn-primary');
-                        b.classList.add('btn-outline-secondary');
-                    });
-                    
-                    // 選中對應的正向影響按鈕
-                    forwardBtn.classList.remove('btn-outline-secondary');
-                    forwardBtn.classList.add('btn-primary');
-                    
-                    // 更新正向影響的隱藏輸入值
-                    const forwardInput = forwardContainer.querySelector('input[type="hidden"]');
-                    if (forwardInput) {
-                        forwardInput.value = value;
-                    }
-                    
-                    console.log(`自動同步正向影響: ${value}`);
-                }
-                
-                // 調用驗證函數
-                if (prefix === 'dim') {
-                    validateStep4();
-                } else if (prefix === 'factor') {
-                    validateStep5();
-                }
-            });
-        });
-    }
+    console.log(`雙向同步功能已移除: ${prefix}_${x}_${y}`);
+    // 此函數保留但不再執行任何同步操作
+    // 用戶現在可以為每個方向獨立選擇不同的分數
 }
 
 // 改進處理關係變化的函數 - 使用更精確的選擇器
@@ -1520,9 +1437,9 @@ function handleRelationChange(input) {
             break;
     }
     
-    // 如果選擇雙向關係，設置同步
+    // 雙向同步功能已移除，用戶可以獨立選擇每個方向的分數
     if (relationValue === 'both') {
-        setupBidirectionalSync(prefix, x, y);
+        console.log('雙向關係選擇：用戶可以為每個方向獨立選擇不同的分數');
     }
     
     // 根據當前步驟調用相應的驗證函數
