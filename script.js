@@ -736,7 +736,7 @@ function generateBestFactorComparison(container, question) {
     `;
     container.appendChild(compareFactorInfo);
     
-    // 創建評分選項
+    // 創建評分選項（橫式布局）
     const ratingDiv = document.createElement('div');
     ratingDiv.className = 'rating-options';
     
@@ -752,31 +752,43 @@ function generateBestFactorComparison(container, question) {
         {value: 9, text: '絕對重要 (9)'}
     ];
     
+    // 創建橫式評分表
     const ratingTable = document.createElement('table');
     ratingTable.className = 'table table-bordered';
     
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
-    headerRow.innerHTML = '<th style="width: 60%;">評分選項</th><th style="width: 40%;">選擇</th>';
+    
+    // 創建表頭：第一列為標題，其餘為評分選項
+    let headerHtml = '<th style="width: 20%;">評分選項</th>';
+    ratingOptions.forEach(option => {
+        headerHtml += `<th style="width: ${80/ratingOptions.length}%; text-align: center;">${option.text}</th>`;
+    });
+    headerRow.innerHTML = headerHtml;
     thead.appendChild(headerRow);
     ratingTable.appendChild(thead);
     
     const tbody = document.createElement('tbody');
+    const buttonRow = document.createElement('tr');
+    
+    // 第一列為標題
+    buttonRow.innerHTML = '<td><strong>選擇評分</strong></td>';
+    
+    // 其餘列為按鈕
     ratingOptions.forEach(option => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${option.text}</td>
-            <td class="text-center">
-                <button type="button" class="btn btn-outline-secondary btn-sm rating-btn" 
-                        data-value="${option.value}" 
-                        onclick="selectBWMRating(this, 'best_${bestFactor}_${question.factorKey}', ${option.value})">
-                    選擇
-                </button>
-            </td>
+        const buttonCell = document.createElement('td');
+        buttonCell.className = 'text-center';
+        buttonCell.innerHTML = `
+            <button type="button" class="btn btn-outline-secondary btn-sm rating-btn" 
+                    data-value="${option.value}" 
+                    onclick="selectBWMRating(this, 'best_${bestFactor}_${question.factorKey}', ${option.value})">
+                選擇
+            </button>
         `;
-        tbody.appendChild(row);
+        buttonRow.appendChild(buttonCell);
     });
     
+    tbody.appendChild(buttonRow);
     ratingTable.appendChild(tbody);
     ratingDiv.appendChild(ratingTable);
     container.appendChild(ratingDiv);
@@ -839,7 +851,7 @@ function generateWorstFactorComparison(container, question) {
     `;
     container.appendChild(worstFactorInfo);
     
-    // 創建評分選項
+    // 創建評分選項（橫式布局）
     const ratingDiv = document.createElement('div');
     ratingDiv.className = 'rating-options';
     
@@ -855,31 +867,43 @@ function generateWorstFactorComparison(container, question) {
         {value: 9, text: '絕對重要 (9)'}
     ];
     
+    // 創建橫式評分表
     const ratingTable = document.createElement('table');
     ratingTable.className = 'table table-bordered';
     
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
-    headerRow.innerHTML = '<th style="width: 60%;">評分選項</th><th style="width: 40%;">選擇</th>';
+    
+    // 創建表頭：第一列為標題，其餘為評分選項
+    let headerHtml = '<th style="width: 20%;">評分選項</th>';
+    ratingOptions.forEach(option => {
+        headerHtml += `<th style="width: ${80/ratingOptions.length}%; text-align: center;">${option.text}</th>`;
+    });
+    headerRow.innerHTML = headerHtml;
     thead.appendChild(headerRow);
     ratingTable.appendChild(thead);
     
     const tbody = document.createElement('tbody');
+    const buttonRow = document.createElement('tr');
+    
+    // 第一列為標題
+    buttonRow.innerHTML = '<td><strong>選擇評分</strong></td>';
+    
+    // 其餘列為按鈕
     ratingOptions.forEach(option => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${option.text}</td>
-            <td class="text-center">
-                <button type="button" class="btn btn-outline-secondary btn-sm rating-btn" 
-                        data-value="${option.value}" 
-                        onclick="selectBWMRating(this, 'worst_${question.factorKey}_${worstFactor}', ${option.value})">
-                    選擇
-                </button>
-            </td>
+        const buttonCell = document.createElement('td');
+        buttonCell.className = 'text-center';
+        buttonCell.innerHTML = `
+            <button type="button" class="btn btn-outline-secondary btn-sm rating-btn" 
+                    data-value="${option.value}" 
+                    onclick="selectBWMRating(this, 'worst_${question.factorKey}_${worstFactor}', ${option.value})">
+                選擇
+            </button>
         `;
-        tbody.appendChild(row);
+        buttonRow.appendChild(buttonCell);
     });
     
+    tbody.appendChild(buttonRow);
     ratingTable.appendChild(tbody);
     ratingDiv.appendChild(ratingTable);
     container.appendChild(ratingDiv);
