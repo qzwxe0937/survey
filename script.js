@@ -13,9 +13,9 @@ const factors = {
         dimension: "A", 
         description: "指企業能夠識別、理解並反應其所處環境中出現的技術變化的能力。",
         examples: [
-            "公司通常對可能影響其業務的技術進步非常敏感。",
-            "公司積極尋求可能影響其業務的技術進步信息。",
-            "公司定期審查技術變化對其業務的影響。"
+            "公司通常很敏感可能影響業務的科技進展。",
+            "公司主動尋求可能影響業務的科技進展情報。",
+            "公司定期檢視科技變革對業務的影響。"
         ]
     },
     a2: { 
@@ -23,9 +23,9 @@ const factors = {
         dimension: "A", 
         description: "指企業在識別和理解技術變化後，能夠迅速且有效地調整其資源和業務流程以適應這些技術變革的能力。",
         examples: [
-            "公司通常對外部技術變化反應迅速。",
-            "公司的業務部門在應對新技術方面不會落後。",
-            "公司不會故意對技術進步反應緩慢。"
+            "公司通常快速回應外在科技變革。",
+            "公司的業務單位對新科技的回應不落人後。",
+            "公司不會藉故緩慢回應科技進展。"
         ]
     },
     b1: { 
@@ -33,9 +33,10 @@ const factors = {
         dimension: "B", 
         description: "指企業如何有效地配置和組織其內部資源，支持組織目標的實現。",
         examples: [
-            "公司從技術服務提供商採購有價值的數位資源。",
-            "公司自主開發有價值的數位資源。",
-            "公司善於利用有價值的數位資源。"
+            "公司從科技服務供應商採購有價值的數位資源。",
+            "公司自行發展有值價的數位資源。",
+            "公司善用有價值的數位資源。"
+            
         ]
     },
     b2: { 
@@ -43,9 +44,9 @@ const factors = {
         dimension: "B", 
         description: "指企業將不同的資源(如人力、技術、財務資源等)進行整合和協同，以達到最大化價值的過程。",
         examples: [
-            "公司整合現有數位資源以逐步提升營運能力。",
-            "公司整合現有數位資源以擴展營運能力。",
-            "公司整合現有數位資源以創造提升競爭優勢的新能力。"
+            "公司整合現有數位資源逐步改善營運能力。",
+            "公司整合現有數位資源擴充營運能力。",
+            "公司整合現有數位資源創造改善競爭優勢的新能力。"
         ]
     },
     b3: { 
@@ -53,9 +54,9 @@ const factors = {
         dimension: "B", 
         description: "指企業在運營過程中，將現有資源的價值最大化，並利用這些資源來支持戰略目標的達成。",
         examples: [
-            "公司善於利用數位資源確認抓住商機所需的靈活整合能力。",
-            "公司善於利用數位資源確認現有能力的有效整合。",
-            "公司善於利用數位資源整合相關策略，如資源優勢策略、市場開發策略或創業策略。"
+            "公司善用數位資源以確認為了爭取商機必須具備的彈性整合能力。",
+            "公司善用數位資源以確認有效的整合現有能力。",
+            "公司善用數位資源以整合相關策略，例如資源優勢策略、市場開拓策略或創業策略。"
         ]
     },
     c1: { 
@@ -63,11 +64,12 @@ const factors = {
         dimension: "C", 
         description: "指在資訊技術領域的專業知識和技能。",
         examples: [
-            "公司IT人員精通多樣化和結構化的程式設計方法或工具。",
-            "公司IT人員精通分散式處理或運算。",
-            "公司IT人員精通網路管理。",
-            "公司IT人員精通網頁應用程式。",
-            "公司IT人員精通資料倉儲和資料探勘。"
+            "公司IT人員擅長多元與結構化的程式方法或工具。",
+            "公司IT人員擅長分散式處理或運算。",       
+            "公司IT人員擅長網路管理。",
+            "公司IT人員擅長網頁應用程式。",
+            "公司IT人員擅長資料倉儲與資料探勘。"
+
         ]
     },
     c2: { 
@@ -156,6 +158,11 @@ let factorQuestions = [];
 let dimensionAnswers = {};
 let factorAnswers = {};
 
+// BWM 問題管理變數
+let currentBWMQuestion = 0;
+let bwmQuestions = [];
+let bwmAnswers = {};
+
 // 在現有代碼中添加以下函數
 
 // 顯示說明頁面
@@ -179,7 +186,6 @@ function startQuestionnaire() {
 // 初始化問卷
 document.addEventListener('DOMContentLoaded', function() {
     generateFactorExplanations();
-    generateBWMSelections();
     generateDEMATELDimensionComparison();
     generateDEMATELFactorComparison();
     updateProgress();
@@ -261,46 +267,170 @@ function generateFactorExplanations() {
 
 // 生成BWM選擇
 function generateBWMSelections() {
-    // 生成最佳因素選項
-    const bestContainer = document.getElementById('best-factor-selection');
-    Object.entries(factors).forEach(([key, factor]) => {
-        const optionDiv = document.createElement('div');
-        optionDiv.className = 'factor-option';
-        
-        let examplesHtml = '';
-        if (factor.examples) {
-            examplesHtml = `
-                <div class="mt-2">
-                    <small class="text-primary"><strong>舉例：</strong></small>
-                    <ul class="list-unstyled mt-1">
-                        ${factor.examples.map(example => 
-                            `<li><small class="text-muted">• ${example}</small></li>`
-                        ).join('')}
-                    </ul>
-                </div>
-            `;
-        }
-        
-        optionDiv.innerHTML = `
-            <div class="row">
-                <div class="col-md-3">
-                    <strong class="text-primary">${key}.</strong> ${factor.name}
-                </div>
-                <div class="col-md-9">
-                    <small class="text-muted">${factor.description}</small>
-                    ${examplesHtml}
-                </div>
-            </div>
-        `;
-        optionDiv.onclick = () => selectBestFactor(key, optionDiv);
-        bestContainer.appendChild(optionDiv);
+    // 生成BWM問題列表
+    bwmQuestions = [];
+    
+    // 問題1：選擇最佳因素
+    bwmQuestions.push({
+        type: 'best_selection',
+        title: '請選出最佳因素',
+        description: '請從以下因素中選出您認為最重要的最佳因素。',
+        question: '哪一個因素對數位轉型最重要？'
     });
+    
+    // 問題2-8：最佳因素與其他因素的比較
+    const factorKeys = Object.keys(factors);
+    factorKeys.forEach((factorKey, index) => {
+        if (index < factorKeys.length - 1) { // 跳過最後一個因素，因為它會是基準
+            bwmQuestions.push({
+                type: 'best_comparison',
+                title: `最佳因素比較 (${index + 1}/${factorKeys.length - 1})`,
+                description: '請比較最佳因素與其他因素的重要性。',
+                question: `比較「最佳因素」與「${factorKey}. ${factors[factorKey].name}」的重要性`,
+                factorKey: factorKey,
+                factorName: factors[factorKey].name,
+                factorDescription: factors[factorKey].description,
+                factorExamples: factors[factorKey].examples
+            });
+        }
+    });
+    
+    // 問題9：選擇最劣因素
+    bwmQuestions.push({
+        type: 'worst_selection',
+        title: '請選出最劣因素',
+        description: '請從以下因素中選出您認為最不重要的最劣因素。',
+        question: '哪一個因素對數位轉型最不重要？'
+    });
+    
+    // 問題10-16：其他因素與最劣因素的比較
+    factorKeys.forEach((factorKey, index) => {
+        if (index < factorKeys.length - 1) { // 跳過最後一個因素，因為它會是基準
+            bwmQuestions.push({
+                type: 'worst_comparison',
+                title: `最劣因素比較 (${index + 1}/${factorKeys.length - 1})`,
+                description: '請比較其他因素與最劣因素的重要性。',
+                question: `比較「${factorKey}. ${factors[factorKey].name}」與「最劣因素」的重要性`,
+                factorKey: factorKey,
+                factorName: factors[factorKey].name,
+                factorDescription: factors[factorKey].description,
+                factorExamples: factors[factorKey].examples
+            });
+        }
+    });
+    
+    // 初始化BWM問題顯示
+    showCurrentBWMQuestion();
+}
 
-    // 生成最劣因素選項
-    const worstContainer = document.getElementById('worst-factor-selection');
+// 顯示當前BWM問題
+function showCurrentBWMQuestion() {
+    if (currentBWMQuestion >= bwmQuestions.length) {
+        return;
+    }
+    
+    const question = bwmQuestions[currentBWMQuestion];
+    const container = document.getElementById('bwm-question-content');
+    
+    // 更新進度
+    updateBWMProgress();
+    
+    // 清空容器
+    container.innerHTML = '';
+    
+    // 創建問題卡片
+    const questionCard = document.createElement('div');
+    questionCard.className = 'card';
+    
+    const cardHeader = document.createElement('div');
+    cardHeader.className = 'card-header';
+    cardHeader.innerHTML = `<h5 class="mb-0">${question.title}</h5>`;
+    
+    const cardBody = document.createElement('div');
+    cardBody.className = 'card-body';
+    
+    // 添加問題描述
+    const descriptionDiv = document.createElement('div');
+    descriptionDiv.className = 'mb-3';
+    descriptionDiv.innerHTML = `
+        <p class="text-muted">${question.description}</p>
+        <h6 class="text-primary">${question.question}</h6>
+    `;
+    cardBody.appendChild(descriptionDiv);
+    
+    // 根據問題類型生成不同的內容
+    if (question.type === 'best_selection') {
+        generateBestFactorSelection(cardBody);
+    } else if (question.type === 'worst_selection') {
+        generateWorstFactorSelection(cardBody);
+    } else if (question.type === 'best_comparison') {
+        generateBestFactorComparison(cardBody, question);
+    } else if (question.type === 'worst_comparison') {
+        generateWorstFactorComparison(cardBody, question);
+    }
+    
+    questionCard.appendChild(cardHeader);
+    questionCard.appendChild(cardBody);
+    container.appendChild(questionCard);
+    
+    // 更新按鈕狀態
+    updateBWMButtons();
+    
+    // 恢復已保存的答案
+    restoreBWMAnswers();
+    
+    // 如果是最後一題，確保驗證
+    if (currentBWMQuestion >= bwmQuestions.length - 1) {
+        console.log('顯示最後一題，確保驗證');
+        validateStep3();
+    }
+}
+
+// 更新BWM進度
+function updateBWMProgress() {
+    const counter = document.getElementById('bwm-question-counter');
+    const progressBar = document.getElementById('bwm-progress-bar');
+    
+    if (counter && progressBar) {
+        counter.textContent = `${currentBWMQuestion + 1} / ${bwmQuestions.length}`;
+        const progress = ((currentBWMQuestion + 1) / bwmQuestions.length) * 100;
+        progressBar.style.width = `${progress}%`;
+    }
+}
+
+// 更新BWM按鈕狀態
+function updateBWMButtons() {
+    const prevBtn = document.getElementById('prev-bwm-btn');
+    const nextBtn = document.getElementById('next-bwm-btn');
+    const step3NextBtn = document.getElementById('step3-next');
+    
+    if (prevBtn) {
+        prevBtn.style.display = currentBWMQuestion > 0 ? 'inline-block' : 'none';
+    }
+    
+    // 隱藏下一題按鈕，因為現在會自動跳轉
+    if (nextBtn) {
+        nextBtn.style.display = 'none';
+    }
+    
+    if (step3NextBtn) {
+        step3NextBtn.style.display = currentBWMQuestion >= bwmQuestions.length - 1 ? 'inline-block' : 'none';
+        // 當顯示下一步按鈕時，也要驗證並啟用
+        if (currentBWMQuestion >= bwmQuestions.length - 1) {
+            validateStep3();
+        }
+    }
+}
+
+// 生成最佳因素選擇
+function generateBestFactorSelection(container) {
+    const optionsDiv = document.createElement('div');
+    optionsDiv.className = 'factor-options';
+    
     Object.entries(factors).forEach(([key, factor]) => {
         const optionDiv = document.createElement('div');
-        optionDiv.className = 'factor-option';
+        optionDiv.className = 'factor-option card mb-2';
+        optionDiv.style.cursor = 'pointer';
         
         let examplesHtml = '';
         if (factor.examples) {
@@ -317,53 +447,204 @@ function generateBWMSelections() {
         }
         
         optionDiv.innerHTML = `
-            <div class="row">
-                <div class="col-md-3">
-                    <strong class="text-danger">${key}.</strong> ${factor.name}
-                </div>
-                <div class="col-md-9">
-                    <small class="text-muted">${factor.description}</small>
-                    ${examplesHtml}
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <strong class="text-primary">${key}.</strong> ${factor.name}
+                    </div>
+                    <div class="col-md-9">
+                        <small class="text-muted">${factor.description}</small>
+                        ${examplesHtml}
+                    </div>
                 </div>
             </div>
         `;
-        optionDiv.onclick = () => selectWorstFactor(key, optionDiv);
-        worstContainer.appendChild(optionDiv);
+        
+        optionDiv.onclick = () => selectBestFactor(key, optionDiv);
+        optionsDiv.appendChild(optionDiv);
     });
+    
+    container.appendChild(optionsDiv);
+}
+
+// 生成最劣因素選擇
+function generateWorstFactorSelection(container) {
+    const optionsDiv = document.createElement('div');
+    optionsDiv.className = 'factor-options';
+    
+    Object.entries(factors).forEach(([key, factor]) => {
+        const optionDiv = document.createElement('div');
+        optionDiv.className = 'factor-option card mb-2';
+        optionDiv.style.cursor = 'pointer';
+        
+        let examplesHtml = '';
+        if (factor.examples) {
+            examplesHtml = `
+                <div class="mt-2">
+                    <small class="text-primary"><strong>舉例：</strong></small>
+                    <ul class="list-unstyled mt-1">
+                        ${factor.examples.map(example => 
+                            `<li><small class="text-muted">• ${example}</small></li>`
+                        ).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+        
+        optionDiv.innerHTML = `
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <strong class="text-danger">${key}.</strong> ${factor.name}
+                    </div>
+                    <div class="col-md-9">
+                        <small class="text-muted">${factor.description}</small>
+                        ${examplesHtml}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        optionDiv.onclick = () => selectWorstFactor(key, optionDiv);
+        optionsDiv.appendChild(optionDiv);
+    });
+    
+    container.appendChild(optionsDiv);
 }
 
 // 選擇最佳因素
 function selectBestFactor(factorKey, element) {
+    // 如果重新選擇最佳因素，清除所有相關的比較答案
+    if (bestFactor && bestFactor !== factorKey) {
+        console.log(`重新選擇最佳因素: ${bestFactor} -> ${factorKey}, 清除相關比較答案`);
+        
+        // 清除所有以 "best_" 開頭的比較答案
+        Object.keys(bwmAnswers).forEach(key => {
+            if (key.startsWith('best_')) {
+                delete bwmAnswers[key];
+                console.log(`清除比較答案: ${key}`);
+            }
+        });
+    }
+    
     bestFactor = factorKey;
     
     // 清除其他選項的選中狀態
-    document.querySelectorAll('#best-factor-selection .factor-option').forEach(opt => {
-        opt.classList.remove('selected');
-    });
+    const container = element.closest('.factor-options');
+    if (container) {
+        container.querySelectorAll('.factor-option').forEach(opt => {
+            opt.classList.remove('selected');
+            opt.style.borderColor = '#dee2e6';
+            opt.style.backgroundColor = '#fff';
+        });
+    }
     
     // 選中當前選項
     element.classList.add('selected');
+    element.style.borderColor = '#007bff';
+    element.style.backgroundColor = '#e3f2fd';
     
-    // 生成最佳因素比較表格
-    generateBestFactorComparison();
+    // 保存答案
+    bwmAnswers['best_factor'] = factorKey;
+    
+    // 檢查是否是最後一題
+    const isLastQuestion = currentBWMQuestion >= bwmQuestions.length - 1;
+    console.log(`選擇最佳因素: ${factorKey}, 是否最後一題: ${isLastQuestion}`);
+    
+    // 自動跳轉到下一題
+    setTimeout(() => {
+        nextBWMQuestion();
+        // 如果是最後一題，立即驗證
+        if (isLastQuestion) {
+            console.log('最後一題已答完，立即驗證');
+            validateStep3();
+        }
+    }, 500);
 }
 
 // 選擇最劣因素
 function selectWorstFactor(factorKey, element) {
-    // 移除之前的選擇
-    document.querySelectorAll('#worst-factor-selection .factor-option').forEach(option => {
-        option.classList.remove('selected');
+    // 如果重新選擇最劣因素，清除所有相關的比較答案
+    if (worstFactor && worstFactor !== factorKey) {
+        console.log(`重新選擇最劣因素: ${worstFactor} -> ${factorKey}, 清除相關比較答案`);
+        
+        // 清除所有以 "worst_" 開頭的比較答案
+        Object.keys(bwmAnswers).forEach(key => {
+            if (key.startsWith('worst_')) {
+                delete bwmAnswers[key];
+                console.log(`清除比較答案: ${key}`);
+            }
+        });
+    }
+    
+    // 清除其他選項的選中狀態
+    const container = element.closest('.factor-options');
+    if (container) {
+        container.querySelectorAll('.factor-option').forEach(opt => {
+            opt.classList.remove('selected');
+            opt.style.borderColor = '#dee2e6';
+            opt.style.backgroundColor = '#fff';
+        });
+    }
+    
+    // 選中當前選項
+    element.classList.add('selected');
+    element.style.borderColor = '#dc3545';
+    element.style.backgroundColor = '#f8d7da';
+    
+    // 保存答案
+    worstFactor = factorKey;
+    bwmAnswers['worst_factor'] = factorKey;
+    
+    // 檢查是否是最後一題
+    const isLastQuestion = currentBWMQuestion >= bwmQuestions.length - 1;
+    console.log(`選擇最劣因素: ${factorKey}, 是否最後一題: ${isLastQuestion}`);
+    
+    // 自動跳轉到下一題
+    setTimeout(() => {
+        nextBWMQuestion();
+        // 如果是最後一題，立即驗證
+        if (isLastQuestion) {
+            console.log('最後一題已答完，立即驗證');
+            validateStep3();
+        }
+    }, 500);
+}
+
+// 選擇BWM評分
+function selectBWMRating(button, name, value) {
+    // 找到同一表格中的所有按鈕
+    const table = button.closest('table');
+    const buttons = table.querySelectorAll('.rating-btn');
+    
+    // 移除所有按鈕的選中狀態
+    buttons.forEach(btn => {
+        btn.classList.remove('btn-primary', 'selected');
+        btn.classList.add('btn-outline-secondary');
+        btn.textContent = '選擇';
     });
     
-    // 設置新的選擇
-    element.classList.add('selected');
-    worstFactor = factorKey;
+    // 設置當前按鈕為選中狀態
+    button.classList.remove('btn-outline-secondary');
+    button.classList.add('btn-primary', 'selected');
+    button.textContent = '已選';
     
-    // 生成最劣因素比較表格
-    generateWorstFactorComparison();
+    // 保存答案
+    bwmAnswers[name] = value;
     
-    // 驗證步驟3
-    validateStep3();
+    // 檢查是否是最後一題
+    const isLastQuestion = currentBWMQuestion >= bwmQuestions.length - 1;
+    console.log(`選擇評分: ${name} = ${value}, 是否最後一題: ${isLastQuestion}`);
+    
+    // 自動跳轉到下一題
+    setTimeout(() => {
+        nextBWMQuestion();
+        // 如果是最後一題，立即驗證
+        if (isLastQuestion) {
+            console.log('最後一題已答完，立即驗證');
+            validateStep3();
+        }
+    }, 500);
 }
 
 // 選擇評分
@@ -399,9 +680,11 @@ function selectRating(button, name, value) {
 }
 
 // 生成最佳因素比較表格
-function generateBestFactorComparison() {
-    const container = document.getElementById('best-factor-comparison');
-    container.innerHTML = '';
+function generateBestFactorComparison(container, question) {
+    if (!bestFactor) {
+        container.innerHTML = '<div class="alert alert-warning">請先選擇最佳因素</div>';
+        return;
+    }
     
     // 添加最佳因素說明
     const bestFactorInfo = document.createElement('div');
@@ -422,21 +705,41 @@ function generateBestFactorComparison() {
     }
     
     bestFactorInfo.innerHTML = `
-        <h5><strong>最佳因素：${bestFactor}. ${factors[bestFactor].name}</strong></h5>
-        <p class="mb-0"><strong>說明：</strong>${factors[bestFactor].description}</p>
+        <h6><strong>最佳因素：${bestFactor}. ${factors[bestFactor].name}</strong></h6>
+        <p class="mb-0"><small>${factors[bestFactor].description}</small></p>
         ${bestExamplesHtml}
     `;
     container.appendChild(bestFactorInfo);
     
-    const table = document.createElement('table');
-    table.className = 'table table-bordered comparison-matrix';
+    // 添加比較因素說明
+    const compareFactorInfo = document.createElement('div');
+    compareFactorInfo.className = 'alert alert-light mb-3';
     
-    // 表頭 - 最佳因素在頂部
-    const thead = document.createElement('thead');
-    const headerRow = document.createElement('tr');
-    headerRow.innerHTML = '<th style="width: 200px;">其他因素</th>';
+    let compareExamplesHtml = '';
+    if (question.factorExamples) {
+        compareExamplesHtml = `
+            <div class="mt-2">
+                <small class="text-primary"><strong>舉例：</strong></small>
+                <ul class="list-unstyled mt-1">
+                    ${question.factorExamples.map(example => 
+                        `<li><small class="text-muted">• ${example}</small></li>`
+                    ).join('')}
+                </ul>
+            </div>
+        `;
+    }
     
-    // 添加評分選項作為表頭
+    compareFactorInfo.innerHTML = `
+        <h6><strong>比較因素：${question.factorKey}. ${question.factorName}</strong></h6>
+        <p class="mb-0"><small>${question.factorDescription}</small></p>
+        ${compareExamplesHtml}
+    `;
+    container.appendChild(compareFactorInfo);
+    
+    // 創建評分選項
+    const ratingDiv = document.createElement('div');
+    ratingDiv.className = 'rating-options';
+    
     const ratingOptions = [
         {value: 1, text: '相等重要 (1)'},
         {value: 2, text: '略為重要 (2)'},
@@ -449,71 +752,67 @@ function generateBestFactorComparison() {
         {value: 9, text: '絕對重要 (9)'}
     ];
     
-    ratingOptions.forEach(option => {
-        headerRow.innerHTML += `<th class="text-center" style="width: 120px;">${option.text}</th>`;
-    });
+    const ratingTable = document.createElement('table');
+    ratingTable.className = 'table table-bordered';
     
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    headerRow.innerHTML = '<th style="width: 60%;">評分選項</th><th style="width: 40%;">選擇</th>';
     thead.appendChild(headerRow);
-    table.appendChild(thead);
+    ratingTable.appendChild(thead);
     
-    // 表身 - 其他因素在左邊
     const tbody = document.createElement('tbody');
-    Object.entries(factors).forEach(([key, factor]) => {
-        if (key !== bestFactor) {
-            const row = document.createElement('tr');
-            
-            // 左邊的因素說明
-            const factorCell = document.createElement('td');
-            
-            let examplesHtml = '';
-            if (factor.examples) {
-                examplesHtml = `
-                    <div class="mt-2">
-                        <small class="text-primary"><strong>舉例：</strong></small>
-                        <ul class="list-unstyled mt-1">
-                            ${factor.examples.map(example => 
-                                `<li><small class="text-muted">• ${example}</small></li>`
-                            ).join('')}
-                        </ul>
-                    </div>
-                `;
-            }
-            
-            factorCell.innerHTML = `
-                <div class="factor-info">
-                    <strong>${key}. ${factor.name}</strong>
-                    <br><small class="text-muted">${factor.description}</small>
-                    ${examplesHtml}
-                </div>
-            `;
-            row.appendChild(factorCell);
-            
-            // 評分按鈕
-            ratingOptions.forEach(option => {
-                const ratingCell = document.createElement('td');
-                ratingCell.className = 'text-center';
-                const button = document.createElement('button');
-                button.type = 'button';
-                button.className = 'btn btn-outline-secondary btn-sm rating-btn';
-                button.setAttribute('data-value', option.value);
-                button.onclick = function() { selectRating(this, `best_${bestFactor}_${key}`, option.value); };
-                button.textContent = '選擇';
-                ratingCell.appendChild(button);
-                row.appendChild(ratingCell);
-            });
-            
-            tbody.appendChild(row);
-        }
+    ratingOptions.forEach(option => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${option.text}</td>
+            <td class="text-center">
+                <button type="button" class="btn btn-outline-secondary btn-sm rating-btn" 
+                        data-value="${option.value}" 
+                        onclick="selectBWMRating(this, 'best_${bestFactor}_${question.factorKey}', ${option.value})">
+                    選擇
+                </button>
+            </td>
+        `;
+        tbody.appendChild(row);
     });
     
-    table.appendChild(tbody);
-    container.appendChild(table);
+    ratingTable.appendChild(tbody);
+    ratingDiv.appendChild(ratingTable);
+    container.appendChild(ratingDiv);
 }
 
 // 生成最劣因素比較表格
-function generateWorstFactorComparison() {
-    const container = document.getElementById('worst-factor-comparison');
-    container.innerHTML = '';
+function generateWorstFactorComparison(container, question) {
+    if (!worstFactor) {
+        container.innerHTML = '<div class="alert alert-warning">請先選擇最劣因素</div>';
+        return;
+    }
+    
+    // 添加比較因素說明
+    const compareFactorInfo = document.createElement('div');
+    compareFactorInfo.className = 'alert alert-light mb-3';
+    
+    let compareExamplesHtml = '';
+    if (question.factorExamples) {
+        compareExamplesHtml = `
+            <div class="mt-2">
+                <small class="text-primary"><strong>舉例：</strong></small>
+                <ul class="list-unstyled mt-1">
+                    ${question.factorExamples.map(example => 
+                        `<li><small class="text-muted">• ${example}</small></li>`
+                    ).join('')}
+                </ul>
+            </div>
+        `;
+    }
+    
+    compareFactorInfo.innerHTML = `
+        <h6><strong>比較因素：${question.factorKey}. ${question.factorName}</strong></h6>
+        <p class="mb-0"><small>${question.factorDescription}</small></p>
+        ${compareExamplesHtml}
+    `;
+    container.appendChild(compareFactorInfo);
     
     // 添加最劣因素說明
     const worstFactorInfo = document.createElement('div');
@@ -534,21 +833,16 @@ function generateWorstFactorComparison() {
     }
     
     worstFactorInfo.innerHTML = `
-        <h5><strong>最劣因素：${worstFactor}. ${factors[worstFactor].name}</strong></h5>
-        <p class="mb-0"><strong>說明：</strong>${factors[worstFactor].description}</p>
+        <h6><strong>最劣因素：${worstFactor}. ${factors[worstFactor].name}</strong></h6>
+        <p class="mb-0"><small>${factors[worstFactor].description}</small></p>
         ${worstExamplesHtml}
     `;
     container.appendChild(worstFactorInfo);
     
-    const table = document.createElement('table');
-    table.className = 'table table-bordered comparison-matrix';
+    // 創建評分選項
+    const ratingDiv = document.createElement('div');
+    ratingDiv.className = 'rating-options';
     
-    // 表頭 - 最劣因素在頂部
-    const thead = document.createElement('thead');
-    const headerRow = document.createElement('tr');
-    headerRow.innerHTML = '<th style="width: 200px;">其他因素</th>';
-    
-    // 添加評分選項作為表頭
     const ratingOptions = [
         {value: 1, text: '相等重要 (1)'},
         {value: 2, text: '略為重要 (2)'},
@@ -561,89 +855,104 @@ function generateWorstFactorComparison() {
         {value: 9, text: '絕對重要 (9)'}
     ];
     
-    ratingOptions.forEach(option => {
-        headerRow.innerHTML += `<th class="text-center" style="width: 120px;">${option.text}</th>`;
-    });
+    const ratingTable = document.createElement('table');
+    ratingTable.className = 'table table-bordered';
     
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    headerRow.innerHTML = '<th style="width: 60%;">評分選項</th><th style="width: 40%;">選擇</th>';
     thead.appendChild(headerRow);
-    table.appendChild(thead);
+    ratingTable.appendChild(thead);
     
-    // 表身 - 其他因素在左邊
     const tbody = document.createElement('tbody');
-    Object.entries(factors).forEach(([key, factor]) => {
-        if (key !== worstFactor) {
-            const row = document.createElement('tr');
-            
-            // 左邊的因素說明
-            const factorCell = document.createElement('td');
-            
-            let examplesHtml = '';
-            if (factor.examples) {
-                examplesHtml = `
-                    <div class="mt-2">
-                        <small class="text-primary"><strong>舉例：</strong></small>
-                        <ul class="list-unstyled mt-1">
-                            ${factor.examples.map(example => 
-                                `<li><small class="text-muted">• ${example}</small></li>`
-                            ).join('')}
-                        </ul>
-                    </div>
-                `;
-            }
-            
-            factorCell.innerHTML = `
-                <div class="factor-info">
-                    <strong>${key}. ${factor.name}</strong>
-                    <br><small class="text-muted">${factor.description}</small>
-                    ${examplesHtml}
-                </div>
-            `;
-            row.appendChild(factorCell);
-            
-            // 評分按鈕
-            ratingOptions.forEach(option => {
-                const ratingCell = document.createElement('td');
-                ratingCell.className = 'text-center';
-                const button = document.createElement('button');
-                button.type = 'button';
-                button.className = 'btn btn-outline-secondary btn-sm rating-btn';
-                button.setAttribute('data-value', option.value);
-                button.onclick = function() { selectRating(this, `worst_${key}_${worstFactor}`, option.value); };
-                button.textContent = '選擇';
-                ratingCell.appendChild(button);
-                row.appendChild(ratingCell);
-            });
-            
-            tbody.appendChild(row);
-        }
+    ratingOptions.forEach(option => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${option.text}</td>
+            <td class="text-center">
+                <button type="button" class="btn btn-outline-secondary btn-sm rating-btn" 
+                        data-value="${option.value}" 
+                        onclick="selectBWMRating(this, 'worst_${question.factorKey}_${worstFactor}', ${option.value})">
+                    選擇
+                </button>
+            </td>
+        `;
+        tbody.appendChild(row);
     });
     
-    table.appendChild(tbody);
-    container.appendChild(table);
+    ratingTable.appendChild(tbody);
+    ratingDiv.appendChild(ratingTable);
+    container.appendChild(ratingDiv);
 }
 
 // 驗證步驟3
 function validateStep3() {
-    // 取得所有 best/worst 比較行的 input name
-    const bestRows = document.querySelectorAll('#best-factor-comparison tbody tr');
-    const worstRows = document.querySelectorAll('#worst-factor-comparison tbody tr');
-    let allFilled = bestFactor && worstFactor;
-
-    bestRows.forEach(row => {
-        const input = row.querySelector('input[type="hidden"][name^="best_"]');
-        if (!input || !input.value) {
-            allFilled = false;
+    console.log('=== BWM驗證開始 ===');
+    console.log('bwmAnswers:', bwmAnswers);
+    console.log('bwmQuestions:', bwmQuestions);
+    
+    // 檢查BWM答案是否完整
+    const requiredAnswers = bwmQuestions.length;
+    const answeredCount = Object.keys(bwmAnswers).length;
+    
+    console.log(`問題總數: ${requiredAnswers}, 已回答數: ${answeredCount}`);
+    
+    // 檢查是否所有問題都已回答
+    const allAnswered = answeredCount >= requiredAnswers;
+    
+    // 檢查是否選擇了最佳和最劣因素
+    const hasBestFactor = bwmAnswers.hasOwnProperty('best_factor');
+    const hasWorstFactor = bwmAnswers.hasOwnProperty('worst_factor');
+    
+    console.log(`最佳因素: ${bwmAnswers.best_factor || '未選擇'}, 最劣因素: ${bwmAnswers.worst_factor || '未選擇'}`);
+    
+    // 檢查比較問題是否完整
+    const factorKeys = Object.keys(factors);
+    const expectedBestComparisons = factorKeys.length - 1; // 最佳因素與其他因素的比較
+    const expectedWorstComparisons = factorKeys.length - 1; // 其他因素與最劣因素的比較
+    
+    console.log(`因素總數: ${factorKeys.length}, 預期最佳比較: ${expectedBestComparisons}, 預期最劣比較: ${expectedWorstComparisons}`);
+    
+    let bestComparisonsCount = 0;
+    let worstComparisonsCount = 0;
+    
+    Object.keys(bwmAnswers).forEach(key => {
+        if (key.startsWith('best_') && key !== 'best_factor') {
+            bestComparisonsCount++;
+            console.log(`最佳比較答案: ${key} = ${bwmAnswers[key]}`);
+        }
+        if (key.startsWith('worst_') && key !== 'worst_factor') {
+            worstComparisonsCount++;
+            console.log(`最劣比較答案: ${key} = ${bwmAnswers[key]}`);
         }
     });
-
-    worstRows.forEach(row => {
-        const input = row.querySelector('input[type="hidden"][name^="worst_"]');
-        if (!input || !input.value) {
-            allFilled = false;
+    
+    console.log(`實際最佳比較數: ${bestComparisonsCount}, 實際最劣比較數: ${worstComparisonsCount}`);
+    
+    const allComparisonsComplete = bestComparisonsCount >= expectedBestComparisons && 
+                                  worstComparisonsCount >= expectedWorstComparisons;
+    
+    const isValid = hasBestFactor && hasWorstFactor && allComparisonsComplete;
+    
+    console.log(`比較完整: ${allComparisonsComplete}, 總體驗證: ${isValid}`);
+    
+    // 更新按鈕狀態
+    const step3NextBtn = document.getElementById('step3-next');
+    if (step3NextBtn) {
+        console.log(`找到step3-next按鈕，當前disabled狀態: ${step3NextBtn.disabled}`);
+        step3NextBtn.disabled = !isValid;
+        console.log(`設置disabled為: ${!isValid}`);
+        if (isValid) {
+            step3NextBtn.classList.remove('btn-secondary');
+            step3NextBtn.classList.add('btn-success');
+            console.log('按鈕樣式已更新為成功狀態');
         }
-    });
-
-    document.getElementById('step3-next').disabled = !allFilled;
+    } else {
+        console.log('未找到step3-next按鈕');
+    }
+    
+    console.log(`BWM驗證結果: 最佳因素=${hasBestFactor}, 最劣因素=${hasWorstFactor}, 比較完整=${allComparisonsComplete}, 總體=${isValid}`);
+    console.log('=== BWM驗證結束 ===');
 }
 
 // 生成DEMATEL構面比較問題列表
@@ -706,9 +1015,9 @@ function showCurrentDimensionQuestion() {
     
     const question = dimensionQuestions[currentDimensionQuestion];
     
-    // 隱藏導航按鈕（自動跳轉模式）
-    if (prevBtn) prevBtn.style.display = 'none';
-    if (nextBtn) nextBtn.style.display = 'none';
+    // 顯示導航按鈕
+    if (prevBtn) prevBtn.style.display = currentDimensionQuestion > 0 ? 'inline-block' : 'none';
+    if (nextBtn) nextBtn.style.display = 'none'; // 保持隱藏，因為是自動跳轉模式
     if (stepNextBtn) stepNextBtn.style.display = 'none';
     
     container.innerHTML = `
@@ -798,9 +1107,9 @@ function showCurrentDimensionQuestion() {
         </div>
     `;
     
-    // 隱藏導航按鈕（自動跳轉模式）
-    if (prevBtn) prevBtn.style.display = 'none';
-    if (nextBtn) nextBtn.style.display = 'none';
+    // 顯示導航按鈕（保持之前的設置）
+    if (prevBtn) prevBtn.style.display = currentDimensionQuestion > 0 ? 'inline-block' : 'none';
+    if (nextBtn) nextBtn.style.display = 'none'; // 保持隱藏，因為是自動跳轉模式
     if (stepNextBtn) stepNextBtn.style.display = 'none';
     
     // 恢復已保存的答案
@@ -937,9 +1246,9 @@ function showCurrentFactorQuestion() {
     
     const question = factorQuestions[currentFactorQuestion];
     
-    // 隱藏導航按鈕（自動跳轉模式）
-    if (prevBtn) prevBtn.style.display = 'none';
-    if (nextBtn) nextBtn.style.display = 'none';
+    // 顯示導航按鈕
+    if (prevBtn) prevBtn.style.display = currentFactorQuestion > 0 ? 'inline-block' : 'none';
+    if (nextBtn) nextBtn.style.display = 'none'; // 保持隱藏，因為是自動跳轉模式
     if (submitBtn) submitBtn.style.display = 'none';
     
     container.innerHTML = `
@@ -1051,9 +1360,9 @@ function showCurrentFactorQuestion() {
         </div>
     `;
     
-    // 隱藏導航按鈕（自動跳轉模式）
-    if (prevBtn) prevBtn.style.display = 'none';
-    if (nextBtn) nextBtn.style.display = 'none';
+    // 顯示導航按鈕（保持之前的設置）
+    if (prevBtn) prevBtn.style.display = currentFactorQuestion > 0 ? 'inline-block' : 'none';
+    if (nextBtn) nextBtn.style.display = 'none'; // 保持隱藏，因為是自動跳轉模式
     if (submitBtn) submitBtn.style.display = 'none';
     
     // 恢復已保存的答案
@@ -1518,26 +1827,21 @@ function forceEnableStep4() {
 // 修改 nextStep 函數，在進入下一步時隱藏頁面上方內容
 function nextStep() {
     if (currentStep < 5) {
+        // 檢查步驟一的驗證
+        if (currentStep === 1) {
+            if (!validateStep1()) {
+                alert('請填寫所有基本資料後再進入下一步！');
+                return;
+            }
+        }
+        
         // 檢查步驟三的驗證
         if (currentStep === 3) {
-            const bestInputs = document.querySelectorAll('input[name^="best_"]');
-            const worstInputs = document.querySelectorAll('input[name^="worst_"]');
-            let allFilled = bestFactor && worstFactor;
-            
-            bestInputs.forEach(input => {
-                if (!input.value || input.value === '') {
-                    allFilled = false;
-                }
-            });
-            
-            worstInputs.forEach(input => {
-                if (!input.value || input.value === '') {
-                    allFilled = false;
-                }
-            });
-            
-            if (!allFilled) {
-                alert('請完成所有因素比較評分後再進入下一步！');
+            // 使用新的BWM驗證邏輯
+            validateStep3();
+            const step3NextBtn = document.getElementById('step3-next');
+            if (step3NextBtn && step3NextBtn.disabled) {
+                alert('請完成所有BWM問題後再進入下一步！');
                 return;
             }
         }
@@ -1548,6 +1852,12 @@ function nextStep() {
         document.getElementById(`step${currentStep}`).classList.remove('active');
         currentStep++;
         document.getElementById(`step${currentStep}`).classList.add('active');
+        
+        // 如果進入步驟3，初始化BWM問題
+        if (currentStep === 3) {
+            generateBWMSelections();
+        }
+        
         updateStepIndicator();
         updateProgress();
     }
@@ -1619,6 +1929,63 @@ function updateProgress() {
     progressBar.textContent = Math.round(progress) + '%';
 }
 
+// 驗證步驟一的基本資料
+function validateStep1() {
+    const name = document.querySelector('input[name="name"]').value.trim();
+    const gender = document.querySelector('input[name="gender"]:checked');
+    const age = document.querySelector('input[name="age"]').value.trim();
+    const education = document.querySelector('input[name="education"]').value.trim();
+    const electronicsIndustry = document.querySelector('input[name="electronics_industry"]:checked');
+    const experience = document.querySelector('input[name="experience"]').value.trim();
+    
+    // 檢查所有欄位是否已填寫
+    if (!name) {
+        alert('請輸入姓名');
+        return false;
+    }
+    
+    if (!gender) {
+        alert('請選擇性別');
+        return false;
+    }
+    
+    if (!age) {
+        alert('請輸入年齡');
+        return false;
+    }
+    
+    if (!education) {
+        alert('請輸入教育程度');
+        return false;
+    }
+    
+    if (!electronicsIndustry) {
+        alert('請選擇是否為電子製造業');
+        return false;
+    }
+    
+    if (!experience) {
+        alert('請輸入數位轉型相關年資');
+        return false;
+    }
+    
+    // 檢查年齡範圍
+    const ageNum = parseInt(age);
+    if (isNaN(ageNum) || ageNum < 18 || ageNum > 100) {
+        alert('請輸入有效的年齡（18-100歲）');
+        return false;
+    }
+    
+    // 檢查年資範圍
+    const experienceNum = parseInt(experience);
+    if (isNaN(experienceNum) || experienceNum < 0 || experienceNum > 50) {
+        alert('請輸入有效的年資（0-50年）');
+        return false;
+    }
+    
+    return true;
+}
+
 // 分離表單提交處理函數
 function handleFormSubmit(e) {
     e.preventDefault();
@@ -1628,31 +1995,30 @@ function handleFormSubmit(e) {
         // 收集基本資料
         const basicData = {
             gender: document.querySelector('input[name="gender"]:checked')?.value,
-            age: document.querySelector('input[name="age"]:checked')?.value,
-            education: document.querySelector('input[name="education"]:checked')?.value,
+            age: document.querySelector('input[name="age"]')?.value,
+            education: document.querySelector('input[name="education"]')?.value,
             electronics_industry: document.querySelector('input[name="electronics_industry"]:checked')?.value,
-            experience: document.querySelector('input[name="experience"]:checked')?.value
+            experience: document.querySelector('input[name="experience"]')?.value,
+            name: document.querySelector('input[name="name"]')?.value
         };
         
         console.log('基本資料:', basicData);
         
         // 收集BWM數據
         const bwmData = {
-            bestFactor: bestFactor,
-            worstFactor: worstFactor,
+            bestFactor: bwmAnswers.best_factor,
+            worstFactor: bwmAnswers.worst_factor,
             bestComparisons: {},
             worstComparisons: {}
         };
         
-        document.querySelectorAll('input[name^="best_"]').forEach(input => {
-            if (input.value) {
-                bwmData.bestComparisons[input.name] = input.value;
+        // 從bwmAnswers中提取比較數據
+        Object.keys(bwmAnswers).forEach(key => {
+            if (key.startsWith('best_') && key !== 'best_factor') {
+                bwmData.bestComparisons[key] = bwmAnswers[key];
             }
-        });
-        
-        document.querySelectorAll('input[name^="worst_"]').forEach(input => {
-            if (input.value) {
-                bwmData.worstComparisons[input.name] = input.value;
+            if (key.startsWith('worst_') && key !== 'worst_factor') {
+                bwmData.worstComparisons[key] = bwmAnswers[key];
             }
         });
         
@@ -1730,6 +2096,7 @@ function displayResults(data) {
                 <div class="col-md-6">
                     <h4>基本資料</h4>
                     <ul class="list-group">
+                        <li class="list-group-item">姓名: ${data.basic.name || '未填寫'}</li>
                         <li class="list-group-item">性別: ${data.basic.gender === 'male' ? '男' : data.basic.gender === 'female' ? '女' : '未填寫'}</li>
                         <li class="list-group-item">年齡: ${data.basic.age || '未填寫'}</li>
                         <li class="list-group-item">教育程度: ${data.basic.education || '未填寫'}</li>
@@ -1758,7 +2125,6 @@ function displayResults(data) {
             <div class="mt-4">
                 <button class="btn btn-primary me-2" onclick="location.reload()">重新填寫問卷</button>
                 <button class="btn btn-secondary me-2" onclick="downloadData(surveyData)">下載數據</button>
-                <button class="btn btn-success" onclick="sendEmailData(surveyData)">寄送數據至 Gmail</button>
             </div>
         `;
         
@@ -1828,6 +2194,7 @@ function formatEmailContent(data) {
     
     // 基本資料
     content += `【基本資料】\n`;
+    content += `姓名：${data.basic.name || '未填寫'}\n`;
     content += `性別：${data.basic.gender === 'male' ? '男' : data.basic.gender === 'female' ? '女' : '未填寫'}\n`;
     content += `年齡：${data.basic.age || '未填寫'}\n`;
     content += `教育程度：${data.basic.education || '未填寫'}\n`;
@@ -1850,4 +2217,136 @@ function formatEmailContent(data) {
     content += JSON.stringify(data, null, 2);
     
     return content;
+}
+
+// 啟用下一題按鈕
+function enableNextBWMQuestion() {
+    const nextBtn = document.getElementById('next-bwm-btn');
+    if (nextBtn) {
+        nextBtn.disabled = false;
+        nextBtn.classList.remove('btn-secondary');
+        nextBtn.classList.add('btn-primary');
+    }
+}
+
+// 下一題BWM問題
+function nextBWMQuestion() {
+    if (currentBWMQuestion < bwmQuestions.length - 1) {
+        currentBWMQuestion++;
+        showCurrentBWMQuestion();
+        
+        // 如果到達最後一題，驗證並啟用下一步按鈕
+        if (currentBWMQuestion >= bwmQuestions.length - 1) {
+            console.log('到達最後一題，調用validateStep3');
+            validateStep3();
+        }
+    } else {
+        // 如果已經在最後一題，也要驗證
+        console.log('已在最後一題，調用validateStep3');
+        validateStep3();
+    }
+}
+
+// 上一題BWM問題
+function prevBWMQuestion() {
+    if (currentBWMQuestion > 0) {
+        currentBWMQuestion--;
+        showCurrentBWMQuestion();
+    }
+}
+
+// 恢復已保存的BWM答案
+function restoreBWMAnswers() {
+    const question = bwmQuestions[currentBWMQuestion];
+    if (!question) return;
+    
+    if (question.type === 'best_selection') {
+        // 恢復最佳因素選擇
+        const savedBestFactor = bwmAnswers.best_factor;
+        if (savedBestFactor) {
+            // 查找包含該因素代碼的選項
+            const options = document.querySelectorAll('.factor-option');
+            options.forEach(option => {
+                const factorText = option.querySelector('.text-primary');
+                if (factorText && factorText.textContent.includes(savedBestFactor)) {
+                    // 移除其他選項的選中狀態
+                    options.forEach(opt => {
+                        opt.classList.remove('selected');
+                        opt.style.borderColor = '#dee2e6';
+                        opt.style.backgroundColor = '#fff';
+                    });
+                    // 選中當前選項
+                    option.classList.add('selected');
+                    option.style.borderColor = '#007bff';
+                    option.style.backgroundColor = '#e3f2fd';
+                }
+            });
+        }
+    } else if (question.type === 'worst_selection') {
+        // 恢復最劣因素選擇
+        const savedWorstFactor = bwmAnswers.worst_factor;
+        if (savedWorstFactor) {
+            // 查找包含該因素代碼的選項
+            const options = document.querySelectorAll('.factor-option');
+            options.forEach(option => {
+                const factorText = option.querySelector('.text-danger');
+                if (factorText && factorText.textContent.includes(savedWorstFactor)) {
+                    // 移除其他選項的選中狀態
+                    options.forEach(opt => {
+                        opt.classList.remove('selected');
+                        opt.style.borderColor = '#dee2e6';
+                        opt.style.backgroundColor = '#fff';
+                    });
+                    // 選中當前選項
+                    option.classList.add('selected');
+                    option.style.borderColor = '#dc3545';
+                    option.style.backgroundColor = '#f8d7da';
+                }
+            });
+        }
+    } else if (question.type === 'best_comparison') {
+        // 恢復最佳因素比較評分
+        const answerKey = `best_${bwmAnswers.best_factor}_${question.factorKey}`;
+        const savedRating = bwmAnswers[answerKey];
+        if (savedRating) {
+            // 查找對應的評分按鈕
+            const buttons = document.querySelectorAll('.rating-btn');
+            buttons.forEach(button => {
+                if (button.getAttribute('data-value') === savedRating.toString()) {
+                    // 移除其他按鈕的選中狀態
+                    buttons.forEach(btn => {
+                        btn.classList.remove('btn-primary', 'selected');
+                        btn.classList.add('btn-outline-secondary');
+                        btn.textContent = '選擇';
+                    });
+                    // 選中當前按鈕
+                    button.classList.remove('btn-outline-secondary');
+                    button.classList.add('btn-primary', 'selected');
+                    button.textContent = '已選';
+                }
+            });
+        }
+    } else if (question.type === 'worst_comparison') {
+        // 恢復最劣因素比較評分
+        const answerKey = `worst_${question.factorKey}_${bwmAnswers.worst_factor}`;
+        const savedRating = bwmAnswers[answerKey];
+        if (savedRating) {
+            // 查找對應的評分按鈕
+            const buttons = document.querySelectorAll('.rating-btn');
+            buttons.forEach(button => {
+                if (button.getAttribute('data-value') === savedRating.toString()) {
+                    // 移除其他按鈕的選中狀態
+                    buttons.forEach(btn => {
+                        btn.classList.remove('btn-primary', 'selected');
+                        btn.classList.add('btn-outline-secondary');
+                        btn.textContent = '選擇';
+                    });
+                    // 選中當前按鈕
+                    button.classList.remove('btn-outline-secondary');
+                    button.classList.add('btn-primary', 'selected');
+                    button.textContent = '已選';
+                }
+            });
+        }
+    }
 } 

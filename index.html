@@ -353,61 +353,23 @@
                             <input type="text" class="form-control" name="name" placeholder="請輸入您的姓名" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">性別</label>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="gender" value="male" required>
-                                <label class="form-check-label">男</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="gender" value="female" required>
-                                <label class="form-check-label">女</label>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">年齡</label>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="age" value="25-30" required>
-                                <label class="form-check-label">25~30歲</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="age" value="30-35" required>
-                                <label class="form-check-label">30~35歲</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="age" value="36-40" required>
-                                <label class="form-check-label">36~40歲</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="age" value="41-45" required>
-                                <label class="form-check-label">41~45歲</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="age" value="46+" required>
-                                <label class="form-check-label">46歲及以上</label>
-                            </div>
+                            <label class="form-label">年齡 (歲)</label>
+                            <input type="number" class="form-control" name="age" placeholder="請輸入您的年齡" min="18" max="100" required>
                         </div>
                     </div>
 
                     <div class="row mt-3">
                         <div class="col-md-6">
                             <label class="form-label">教育程度</label>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="education" value="college" required>
-                                <label class="form-check-label">專科</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="education" value="university" required>
-                                <label class="form-check-label">大學</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="education" value="master" required>
-                                <label class="form-check-label">碩士</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="education" value="phd" required>
-                                <label class="form-check-label">博士</label>
-                            </div>
+                            <input type="text" class="form-control" name="education" placeholder="請輸入您的教育程度" required>
                         </div>
+                        <div class="col-md-6">
+                            <label class="form-label">數位轉型相關年資 (年)</label>
+                            <input type="number" class="form-control" name="experience" placeholder="請輸入您的年資" min="0" max="50" required>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
                         <div class="col-md-6">
                             <label class="form-label">是否為電子製造業</label>
                             <div class="form-check">
@@ -419,26 +381,15 @@
                                 <label class="form-check-label">否</label>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="row mt-3">
                         <div class="col-md-6">
-                            <label class="form-label">數位轉型相關年資</label>
+                            <label class="form-label">性別</label>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="experience" value="5" required>
-                                <label class="form-check-label">5年</label>
+                                <input class="form-check-input" type="radio" name="gender" value="male" required>
+                                <label class="form-check-label">男</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="experience" value="6-10" required>
-                                <label class="form-check-label">6~10年</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="experience" value="11-20" required>
-                                <label class="form-check-label">11~20年</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="experience" value="21+" required>
-                                <label class="form-check-label">21年及以上</label>
+                                <input class="form-check-input" type="radio" name="gender" value="female" required>
+                                <label class="form-check-label">女</label>
                             </div>
                         </div>
                     </div>
@@ -456,7 +407,7 @@
                     
                     <!-- 研究架構圖 -->
                     <div class="text-center mb-4">
-                        <img src="架構圖.png" alt="研究架構圖" class="img-fluid" style="max-width: 100%; height: auto;">
+                        <img src="Research_aspects.png" alt="研究架構圖" class="img-fluid" style="max-width: 100%; height: auto;">
                     </div>
                     
                     <div class="factor-description">
@@ -531,53 +482,37 @@
             <!-- 步驟3：BWM 因素比較 -->
             <div class="step-content" id="step3">
                 <div class="question-card">
-                    <h3>步驟 3：BWM 因素全面比較</h3>
+                    <h3>步驟 3：BWM 因素比較</h3>
                     
+                    <!-- 問題進度指示器 -->
+                    <div class="question-progress mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted">問題進度</span>
+                            <span class="text-muted" id="bwm-question-counter">1 / 1</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar" id="bwm-progress-bar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </div>
+
                     <!-- 因素說明 -->
-                    <div class="factor-description">
+                    <div class="factor-description mb-4">
                         <h5>因素說明</h5>
                         <div id="factor-explanations">
                             <!-- 因素說明將由 JavaScript 動態生成 -->
                         </div>
                     </div>
 
-                    <!-- 最佳因素選擇 -->
-                    <div class="mb-4">
-                        <h5>3.1.2 最佳因素比較</h5>
-                        <p class="text-muted">請選出最佳因素，並根據最佳因素與其他因素的偏好程度填入對應等級。</p>
-                        
-                        <div class="mb-3">
-                            <label class="form-label"><strong>最佳因素選擇：</strong></label>
-                            <div id="best-factor-selection">
-                                <!-- 最佳因素選項將由 JavaScript 動態生成 -->
-                            </div>
-                        </div>
-
-                        <div id="best-factor-comparison">
-                            <!-- 最佳因素比較表格將由 JavaScript 動態生成 -->
-                        </div>
-                    </div>
-
-                    <!-- 最劣因素選擇 -->
-                    <div class="mb-4">
-                        <h5>3.1.3 最劣因素比較</h5>
-                        <p class="text-muted">請選出最劣因素，並根據其他因素與最劣因素的偏好程度填入對應等級。</p>
-                        
-                        <div class="mb-3">
-                            <label class="form-label"><strong>最劣因素選擇：</strong></label>
-                            <div id="worst-factor-selection">
-                                <!-- 最劣因素選項將由 JavaScript 動態生成 -->
-                            </div>
-                        </div>
-
-                        <div id="worst-factor-comparison">
-                            <!-- 最劣因素比較表格將由 JavaScript 動態生成 -->
-                        </div>
+                    <!-- BWM 問題內容區域 -->
+                    <div id="bwm-question-content">
+                        <!-- BWM 問題將由 JavaScript 動態生成 -->
                     </div>
 
                     <div class="text-center mt-4">
                         <button type="button" class="btn btn-secondary" onclick="prevStep()">上一步</button>
-                        <button type="button" class="btn btn-primary" onclick="nextStep()" id="step3-next" disabled>下一步</button>
+                        <button type="button" class="btn btn-outline-primary" onclick="prevBWMQuestion()" id="prev-bwm-btn" style="display: none;">上一題</button>
+                        <button type="button" class="btn btn-primary" onclick="nextBWMQuestion()" id="next-bwm-btn" style="display: none;">下一題</button>
+                        <button type="button" class="btn btn-success" onclick="nextStep()" id="step3-next" style="display: none;">下一步</button>
                     </div>
                 </div>
             </div>
