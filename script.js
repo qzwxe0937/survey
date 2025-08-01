@@ -682,8 +682,11 @@ function generateBestFactorComparison(container, question) {
         return;
     }
     
-    // 如果比較的是最佳因素自己，跳過這個問題
+    // 如果比較的是最佳因素自己，自動填入1並跳過
     if (question.factorKey === bestFactor) {
+        // 自動填入1
+        bwmAnswers[`best_${bestFactor}_${bestFactor}`] = 1;
+        console.log(`自動填入自己比較: best_${bestFactor}_${bestFactor} = 1`);
         // 自動跳過這個問題
         setTimeout(() => {
             nextBWMQuestion();
@@ -806,8 +809,11 @@ function generateWorstFactorComparison(container, question) {
         return;
     }
     
-    // 如果比較的是最劣因素自己，跳過這個問題
+    // 如果比較的是最劣因素自己，自動填入1並跳過
     if (question.factorKey === worstFactor) {
+        // 自動填入1
+        bwmAnswers[`worst_${worstFactor}_${worstFactor}`] = 1;
+        console.log(`自動填入自己比較: worst_${worstFactor}_${worstFactor} = 1`);
         // 自動跳過這個問題
         setTimeout(() => {
             nextBWMQuestion();
