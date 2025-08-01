@@ -2073,25 +2073,13 @@ function handleFormSubmit(e) {
             worstComparisons: {}
         };
         
-        // 從bwmAnswers中提取比較數據，排除自己與自己的比較
+        // 從bwmAnswers中提取比較數據，包含自己與自己的比較
         Object.keys(bwmAnswers).forEach(key => {
             if (key.startsWith('best_') && key !== 'best_factor') {
-                // 檢查是否為自己與自己的比較
-                const parts = key.split('_');
-                if (parts.length >= 3 && parts[1] === bwmAnswers.best_factor && parts[2] === bwmAnswers.best_factor) {
-                    console.log(`跳過自己比較: ${key}`);
-                } else {
-                    bwmData.bestComparisons[key] = bwmAnswers[key];
-                }
+                bwmData.bestComparisons[key] = bwmAnswers[key];
             }
             if (key.startsWith('worst_') && key !== 'worst_factor') {
-                // 檢查是否為自己與自己的比較
-                const parts = key.split('_');
-                if (parts.length >= 3 && parts[1] === bwmAnswers.worst_factor && parts[2] === bwmAnswers.worst_factor) {
-                    console.log(`跳過自己比較: ${key}`);
-                } else {
-                    bwmData.worstComparisons[key] = bwmAnswers[key];
-                }
+                bwmData.worstComparisons[key] = bwmAnswers[key];
             }
         });
         
