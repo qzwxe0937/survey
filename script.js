@@ -281,18 +281,16 @@ function generateBWMSelections() {
     // 問題2-8：最佳因素與其他因素的比較
     const factorKeys = Object.keys(factors);
     factorKeys.forEach((factorKey, index) => {
-        if (index < factorKeys.length - 1) { // 跳過最後一個因素，因為它會是基準
-            bwmQuestions.push({
-                type: 'best_comparison',
-                title: `最佳因素比較 (${index + 1}/${factorKeys.length - 1})`,
-                description: '請比較最佳因素與其他因素的重要性。',
-                question: `比較「最佳因素」與「${factorKey}. ${factors[factorKey].name}」的重要性`,
-                factorKey: factorKey,
-                factorName: factors[factorKey].name,
-                factorDescription: factors[factorKey].description,
-                factorExamples: factors[factorKey].examples
-            });
-        }
+        bwmQuestions.push({
+            type: 'best_comparison',
+            title: `最佳因素比較 (${index + 1}/${factorKeys.length})`,
+            description: '請比較最佳因素與其他因素的重要性。',
+            question: `比較「最佳因素」與「${factorKey}. ${factors[factorKey].name}」的重要性`,
+            factorKey: factorKey,
+            factorName: factors[factorKey].name,
+            factorDescription: factors[factorKey].description,
+            factorExamples: factors[factorKey].examples
+        });
     });
     
     // 問題9：選擇最劣因素
@@ -305,18 +303,16 @@ function generateBWMSelections() {
     
     // 問題10-16：其他因素與最劣因素的比較
     factorKeys.forEach((factorKey, index) => {
-        if (index < factorKeys.length - 1) { // 跳過最後一個因素，因為它會是基準
-            bwmQuestions.push({
-                type: 'worst_comparison',
-                title: `最劣因素比較 (${index + 1}/${factorKeys.length - 1})`,
-                description: '請比較其他因素與最劣因素的重要性。',
-                question: `比較「${factorKey}. ${factors[factorKey].name}」與「最劣因素」的重要性`,
-                factorKey: factorKey,
-                factorName: factors[factorKey].name,
-                factorDescription: factors[factorKey].description,
-                factorExamples: factors[factorKey].examples
-            });
-        }
+        bwmQuestions.push({
+            type: 'worst_comparison',
+            title: `最劣因素比較 (${index + 1}/${factorKeys.length})`,
+            description: '請比較其他因素與最劣因素的重要性。',
+            question: `比較「${factorKey}. ${factors[factorKey].name}」與「最劣因素」的重要性`,
+            factorKey: factorKey,
+            factorName: factors[factorKey].name,
+            factorDescription: factors[factorKey].description,
+            factorExamples: factors[factorKey].examples
+        });
     });
     
     // 初始化BWM問題顯示
@@ -686,6 +682,15 @@ function generateBestFactorComparison(container, question) {
         return;
     }
     
+    // 如果比較的是最佳因素自己，跳過這個問題
+    if (question.factorKey === bestFactor) {
+        // 自動跳過這個問題
+        setTimeout(() => {
+            nextBWMQuestion();
+        }, 100);
+        return;
+    }
+    
     // 添加最佳因素說明
     const bestFactorInfo = document.createElement('div');
     bestFactorInfo.className = 'alert alert-info mb-3';
@@ -798,6 +803,15 @@ function generateBestFactorComparison(container, question) {
 function generateWorstFactorComparison(container, question) {
     if (!worstFactor) {
         container.innerHTML = '<div class="alert alert-warning">請先選擇最劣因素</div>';
+        return;
+    }
+    
+    // 如果比較的是最劣因素自己，跳過這個問題
+    if (question.factorKey === worstFactor) {
+        // 自動跳過這個問題
+        setTimeout(() => {
+            nextBWMQuestion();
+        }, 100);
         return;
     }
     
@@ -932,22 +946,39 @@ function validateStep3() {
     
     // 檢查比較問題是否完整
     const factorKeys = Object.keys(factors);
-    const expectedBestComparisons = factorKeys.length - 1; // 最佳因素與其他因素的比較
-    const expectedWorstComparisons = factorKeys.length - 1; // 其他因素與最劣因素的比較
+    const bestFactor = bwmAnswers.best_factor;
+    const worstFactor = bwmAnswers.worst_factor;
     
-    console.log(`因素總數: ${factorKeys.length}, 預期最佳比較: ${expectedBestComparisons}, 預期最劣比較: ${expectedWorstComparisons}`);
+    // 計算預期的比較數量（排除自己與自己的比較）
+    const expectedBestComparisons = factorKeys.length - 1; // 最佳因素與其他因素的比較（排除自己）
+    const expectedWorstComparisons = factorKeys.length - 1; // 其他因素與最劣因素的比較（排除自己）
+    
+    console.log(`因素總數: ${factorKeys.length}, 最佳因素: ${bestFactor}, 最劣因素: ${worstFactor}`);
+    console.log(`預期最佳比較: ${expectedBestComparisons}, 預期最劣比較: ${expectedWorstComparisons}`);
     
     let bestComparisonsCount = 0;
     let worstComparisonsCount = 0;
     
     Object.keys(bwmAnswers).forEach(key => {
         if (key.startsWith('best_') && key !== 'best_factor') {
-            bestComparisonsCount++;
-            console.log(`最佳比較答案: ${key} = ${bwmAnswers[key]}`);
+            // 檢查是否為自己與自己的比較
+            const parts = key.split('_');
+            if (parts.length >= 3 && parts[1] === bestFactor && parts[2] === bestFactor) {
+                console.log(`跳過自己比較: ${key}`);
+            } else {
+                bestComparisonsCount++;
+                console.log(`最佳比較答案: ${key} = ${bwmAnswers[key]}`);
+            }
         }
         if (key.startsWith('worst_') && key !== 'worst_factor') {
-            worstComparisonsCount++;
-            console.log(`最劣比較答案: ${key} = ${bwmAnswers[key]}`);
+            // 檢查是否為自己與自己的比較
+            const parts = key.split('_');
+            if (parts.length >= 3 && parts[1] === worstFactor && parts[2] === worstFactor) {
+                console.log(`跳過自己比較: ${key}`);
+            } else {
+                worstComparisonsCount++;
+                console.log(`最劣比較答案: ${key} = ${bwmAnswers[key]}`);
+            }
         }
     });
     
@@ -2036,13 +2067,25 @@ function handleFormSubmit(e) {
             worstComparisons: {}
         };
         
-        // 從bwmAnswers中提取比較數據
+        // 從bwmAnswers中提取比較數據，排除自己與自己的比較
         Object.keys(bwmAnswers).forEach(key => {
             if (key.startsWith('best_') && key !== 'best_factor') {
-                bwmData.bestComparisons[key] = bwmAnswers[key];
+                // 檢查是否為自己與自己的比較
+                const parts = key.split('_');
+                if (parts.length >= 3 && parts[1] === bwmAnswers.best_factor && parts[2] === bwmAnswers.best_factor) {
+                    console.log(`跳過自己比較: ${key}`);
+                } else {
+                    bwmData.bestComparisons[key] = bwmAnswers[key];
+                }
             }
             if (key.startsWith('worst_') && key !== 'worst_factor') {
-                bwmData.worstComparisons[key] = bwmAnswers[key];
+                // 檢查是否為自己與自己的比較
+                const parts = key.split('_');
+                if (parts.length >= 3 && parts[1] === bwmAnswers.worst_factor && parts[2] === bwmAnswers.worst_factor) {
+                    console.log(`跳過自己比較: ${key}`);
+                } else {
+                    bwmData.worstComparisons[key] = bwmAnswers[key];
+                }
             }
         });
         
