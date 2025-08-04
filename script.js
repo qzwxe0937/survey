@@ -65,7 +65,7 @@ const factors = {
         description: "指在資訊技術領域的專業知識和技能。",
         examples: [
             "公司IT人員擅長多元與結構化的程式方法或工具。",
-            "公司IT人員擅長分散式處理或運算。",       
+            "公司IT人員擅長分散式處理或運算。",
             "公司IT人員擅長網路管理。",
             "公司IT人員擅長網頁應用程式。",
             "公司IT人員擅長資料倉儲與資料探勘。"
@@ -185,9 +185,52 @@ function startQuestionnaire() {
 
 // 初始化問卷
 document.addEventListener('DOMContentLoaded', function() {
-    generateDEMATELDimensionComparison();
-    generateDEMATELFactorComparison();
+    // 檢查並恢復保存的答案
+    if (hasSavedAnswers()) {
+        const restored = restoreAllAnswers();
+        if (restored) {
+            // 顯示恢復提示
+            showRestoreNotification();
+            
+            // 跳轉到保存的步驟
+            if (currentStep > 1) {
+                // 隱藏所有步驟內容
+                for (let i = 1; i <= 5; i++) {
+                    const stepContent = document.getElementById(`step${i}`);
+                    if (stepContent) {
+                        stepContent.classList.remove('active');
+                    }
+                }
+                
+                // 顯示當前步驟內容
+                const currentStepContent = document.getElementById(`step${currentStep}`);
+                if (currentStepContent) {
+                    currentStepContent.classList.add('active');
+                }
+                
+                // 隱藏頁面上方內容
+                hideHeaderContent();
+                
+                // 根據步驟初始化相應內容
+                if (currentStep === 2) {
+                    generateFactorExplanations();
+                } else if (currentStep === 3) {
+                    generateBWMSelections();
+                } else if (currentStep === 4) {
+                    generateDEMATELDimensionComparison();
+                } else if (currentStep === 5) {
+                    generateDEMATELFactorComparison();
+                }
+            }
+        }
+    } else {
+        // 沒有保存的答案，正常初始化
+        generateDEMATELDimensionComparison();
+        generateDEMATELFactorComparison();
+    }
+    
     updateProgress();
+    updateStepIndicator();
     
     // 確保表單提交事件監聽器正確綁定
     const form = document.getElementById('questionnaireForm');
@@ -198,10 +241,15 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('找不到問卷表單元素');
     }
     
-    // 自動顯示說明頁面
-    setTimeout(() => {
-        showInstructions();
-    }, 500);
+    // 自動顯示說明頁面（僅在沒有恢復答案時）
+    if (!hasSavedAnswers()) {
+        setTimeout(() => {
+            showInstructions();
+        }, 500);
+    }
+    
+    // 更新清除按钮状态
+    updateClearButton();
 });
 
 // 生成因素說明
@@ -327,11 +375,31 @@ function showCurrentBWMQuestion() {
     const question = bwmQuestions[currentBWMQuestion];
     const container = document.getElementById('bwm-question-content');
     
+    // 檢查容器是否存在
+    if (!container) {
+        console.error('找不到BWM問題容器');
+        return;
+    }
+    
     // 更新進度
     updateBWMProgress();
     
     // 清空容器
     container.innerHTML = '';
+    
+    // 添加題目導航
+    const navigationDiv = document.createElement('div');
+    navigationDiv.className = 'question-navigation mb-4';
+    navigationDiv.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0">題目導航</h6>
+            <button type="button" class="btn btn-sm btn-outline-primary" onclick="showBWMQuestionList()">查看所有題目</button>
+        </div>
+        <div class="question-list" id="bwm-question-list">
+            ${generateBWMQuestionList()}
+        </div>
+    `;
+    container.appendChild(navigationDiv);
     
     // 創建問題卡片
     const questionCard = document.createElement('div');
@@ -374,10 +442,89 @@ function showCurrentBWMQuestion() {
     // 恢復已保存的答案
     restoreBWMAnswers();
     
-    // 如果是最後一題，確保驗證
-    if (currentBWMQuestion >= bwmQuestions.length - 1) {
-        console.log('顯示最後一題，確保驗證');
-        validateStep3();
+    // 檢查是否所有問題都已完成
+    checkBWMCompletion();
+}
+
+// 生成BWM題目列表
+function generateBWMQuestionList() {
+    let html = '<div class="row">';
+    
+    bwmQuestions.forEach((question, index) => {
+        const isAnswered = isBWMQuestionAnswered(index);
+        const isCurrent = index === currentBWMQuestion;
+        const statusClass = isAnswered ? 'btn-success' : 'btn-outline-secondary';
+        const currentClass = isCurrent ? 'border-primary' : '';
+        
+        html += `
+            <div class="col-md-3 col-sm-4 col-6 mb-2">
+                <button type="button" 
+                        class="btn btn-sm ${statusClass} ${currentClass} w-100" 
+                        onclick="goToBWMQuestion(${index})"
+                        title="${question.title}">
+                    ${index + 1}. ${question.title.substring(0, 10)}${question.title.length > 10 ? '...' : ''}
+                </button>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    return html;
+}
+
+// 檢查BWM題目是否已回答
+function isBWMQuestionAnswered(questionIndex) {
+    const question = bwmQuestions[questionIndex];
+    
+    if (question.type === 'best_selection') {
+        return bwmAnswers.hasOwnProperty('best_factor');
+    } else if (question.type === 'worst_selection') {
+        return bwmAnswers.hasOwnProperty('worst_factor');
+    } else if (question.type === 'best_comparison') {
+        const bestFactor = bwmAnswers.best_factor;
+        if (!bestFactor) return false;
+        
+        // 檢查當前問題對應的比較是否已回答
+        const answerKey = `best_${bestFactor}_${question.factorKey}`;
+        return bwmAnswers.hasOwnProperty(answerKey);
+    } else if (question.type === 'worst_comparison') {
+        const worstFactor = bwmAnswers.worst_factor;
+        if (!worstFactor) return false;
+        
+        // 檢查當前問題對應的比較是否已回答
+        const answerKey = `worst_${question.factorKey}_${worstFactor}`;
+        return bwmAnswers.hasOwnProperty(answerKey);
+    }
+    
+    return false;
+}
+
+// 跳轉到指定BWM題目
+function goToBWMQuestion(questionIndex) {
+    if (questionIndex >= 0 && questionIndex < bwmQuestions.length) {
+        currentBWMQuestion = questionIndex;
+        showCurrentBWMQuestion();
+    }
+}
+
+// 檢查BWM完成狀態
+function checkBWMCompletion() {
+    const allAnswered = bwmQuestions.every((_, index) => isBWMQuestionAnswered(index));
+    const step3NextBtn = document.getElementById('step3-next');
+    
+    if (allAnswered && step3NextBtn) {
+        step3NextBtn.style.display = 'inline-block';
+        step3NextBtn.disabled = false;
+        step3NextBtn.classList.add('btn-success');
+        step3NextBtn.classList.remove('btn-secondary');
+    }
+}
+
+// 顯示BWM題目列表
+function showBWMQuestionList() {
+    const questionList = document.getElementById('bwm-question-list');
+    if (questionList) {
+        questionList.innerHTML = generateBWMQuestionList();
     }
 }
 
@@ -542,6 +689,12 @@ function selectBestFactor(factorKey, element) {
     // 保存答案
     bwmAnswers['best_factor'] = factorKey;
     
+    // 自動保存答案
+    autoSaveAnswers();
+    
+    // 立即更新題目導航狀態
+    updateBWMQuestionNavigation();
+    
     // 檢查是否是最後一題
     const isLastQuestion = currentBWMQuestion >= bwmQuestions.length - 1;
     console.log(`選擇最佳因素: ${factorKey}, 是否最後一題: ${isLastQuestion}`);
@@ -591,6 +744,12 @@ function selectWorstFactor(factorKey, element) {
     worstFactor = factorKey;
     bwmAnswers['worst_factor'] = factorKey;
     
+    // 自動保存答案
+    autoSaveAnswers();
+    
+    // 立即更新題目導航狀態
+    updateBWMQuestionNavigation();
+    
     // 檢查是否是最後一題
     const isLastQuestion = currentBWMQuestion >= bwmQuestions.length - 1;
     console.log(`選擇最劣因素: ${factorKey}, 是否最後一題: ${isLastQuestion}`);
@@ -626,6 +785,12 @@ function selectBWMRating(button, name, value) {
     
     // 保存答案
     bwmAnswers[name] = value;
+    
+    // 自動保存答案
+    autoSaveAnswers();
+    
+    // 立即更新題目導航狀態
+    updateBWMQuestionNavigation();
     
     // 檢查是否是最後一題
     const isLastQuestion = currentBWMQuestion >= bwmQuestions.length - 1;
@@ -676,16 +841,18 @@ function selectRating(button, name, value) {
 
 // 生成最佳因素比較表格
 function generateBestFactorComparison(container, question) {
-    if (!bestFactor) {
+    // 从保存的答案中获取最佳因素
+    const savedBestFactor = bwmAnswers.best_factor;
+    if (!savedBestFactor) {
         container.innerHTML = '<div class="alert alert-warning">請先選擇最佳因素</div>';
         return;
     }
     
     // 如果比較的是最佳因素自己，自動填入1並跳過
-    if (question.factorKey === bestFactor) {
+    if (question.factorKey === savedBestFactor) {
         // 自動填入1
-        bwmAnswers[`best_${bestFactor}_${bestFactor}`] = 1;
-        console.log(`自動填入自己比較: best_${bestFactor}_${bestFactor} = 1`);
+        bwmAnswers[`best_${savedBestFactor}_${savedBestFactor}`] = 1;
+        console.log(`自動填入自己比較: best_${savedBestFactor}_${savedBestFactor} = 1`);
         // 自動跳過這個問題
         setTimeout(() => {
             nextBWMQuestion();
@@ -698,12 +865,12 @@ function generateBestFactorComparison(container, question) {
     bestFactorInfo.className = 'alert alert-info mb-3';
     
     let bestExamplesHtml = '';
-    if (factors[bestFactor].examples) {
+    if (factors[savedBestFactor].examples) {
         bestExamplesHtml = `
             <div class="mt-2">
                 <small class="text-primary"><strong>舉例：</strong></small>
                 <ul class="list-unstyled mt-1">
-                    ${factors[bestFactor].examples.map(example => 
+                    ${factors[savedBestFactor].examples.map(example => 
                         `<li><small class="text-muted">• ${example}</small></li>`
                     ).join('')}
                 </ul>
@@ -712,8 +879,8 @@ function generateBestFactorComparison(container, question) {
     }
     
     bestFactorInfo.innerHTML = `
-        <h6><strong>最佳因素：${bestFactor}. ${factors[bestFactor].name}</strong></h6>
-        <p class="mb-0"><small>${factors[bestFactor].description}</small></p>
+        <h6><strong>最佳因素：${savedBestFactor}. ${factors[savedBestFactor].name}</strong></h6>
+        <p class="mb-0"><small>${factors[savedBestFactor].description}</small></p>
         ${bestExamplesHtml}
     `;
     container.appendChild(bestFactorInfo);
@@ -803,16 +970,18 @@ function generateBestFactorComparison(container, question) {
 
 // 生成最劣因素比較表格
 function generateWorstFactorComparison(container, question) {
-    if (!worstFactor) {
+    // 从保存的答案中获取最劣因素
+    const savedWorstFactor = bwmAnswers.worst_factor;
+    if (!savedWorstFactor) {
         container.innerHTML = '<div class="alert alert-warning">請先選擇最劣因素</div>';
         return;
     }
     
     // 如果比較的是最劣因素自己，自動填入1並跳過
-    if (question.factorKey === worstFactor) {
+    if (question.factorKey === savedWorstFactor) {
         // 自動填入1
-        bwmAnswers[`worst_${worstFactor}_${worstFactor}`] = 1;
-        console.log(`自動填入自己比較: worst_${worstFactor}_${worstFactor} = 1`);
+        bwmAnswers[`worst_${savedWorstFactor}_${savedWorstFactor}`] = 1;
+        console.log(`自動填入自己比較: worst_${savedWorstFactor}_${savedWorstFactor} = 1`);
         // 自動跳過這個問題
         setTimeout(() => {
             nextBWMQuestion();
@@ -850,12 +1019,12 @@ function generateWorstFactorComparison(container, question) {
     worstFactorInfo.className = 'alert alert-warning mb-3';
     
     let worstExamplesHtml = '';
-    if (factors[worstFactor].examples) {
+    if (factors[savedWorstFactor].examples) {
         worstExamplesHtml = `
             <div class="mt-2">
                 <small class="text-primary"><strong>舉例：</strong></small>
                 <ul class="list-unstyled mt-1">
-                    ${factors[worstFactor].examples.map(example => 
+                    ${factors[savedWorstFactor].examples.map(example => 
                         `<li><small class="text-muted">• ${example}</small></li>`
                     ).join('')}
                 </ul>
@@ -864,8 +1033,8 @@ function generateWorstFactorComparison(container, question) {
     }
     
     worstFactorInfo.innerHTML = `
-        <h6><strong>最劣因素：${worstFactor}. ${factors[worstFactor].name}</strong></h6>
-        <p class="mb-0"><small>${factors[worstFactor].description}</small></p>
+        <h6><strong>最劣因素：${savedWorstFactor}. ${factors[savedWorstFactor].name}</strong></h6>
+        <p class="mb-0"><small>${factors[savedWorstFactor].description}</small></p>
         ${worstExamplesHtml}
     `;
     container.appendChild(worstFactorInfo);
@@ -1059,6 +1228,12 @@ function showCurrentDimensionQuestion() {
     const nextBtn = document.getElementById('next-dimension-btn');
     const stepNextBtn = document.getElementById('step4-next');
     
+    // 檢查容器是否存在
+    if (!container) {
+        console.error('找不到構面比較容器');
+        return;
+    }
+    
     if (currentDimensionQuestion >= dimensionQuestions.length) {
         // 所有問題已完成，顯示並啟用下一步按鈕
         console.log('所有問題已完成，啟用下一步按鈕');
@@ -1075,12 +1250,30 @@ function showCurrentDimensionQuestion() {
     
     const question = dimensionQuestions[currentDimensionQuestion];
     
+    // 清空容器
+    container.innerHTML = '';
+    
+    // 添加題目導航
+    const navigationDiv = document.createElement('div');
+    navigationDiv.className = 'question-navigation mb-4';
+    navigationDiv.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0">構面關係題目導航</h6>
+            <button type="button" class="btn btn-sm btn-outline-primary" onclick="showDimensionQuestionList()">查看所有題目</button>
+        </div>
+        <div class="question-list" id="dimension-question-list">
+            ${generateDimensionQuestionList()}
+        </div>
+    `;
+    container.appendChild(navigationDiv);
+    
     // 顯示導航按鈕
     if (prevBtn) prevBtn.style.display = currentDimensionQuestion > 0 ? 'inline-block' : 'none';
     if (nextBtn) nextBtn.style.display = 'none'; // 保持隱藏，因為是自動跳轉模式
     if (stepNextBtn) stepNextBtn.style.display = 'none';
     
-    container.innerHTML = `
+    const questionContent = document.createElement('div');
+    questionContent.innerHTML = `
         <div class="question-progress mb-3">
             <div class="progress">
                 <div class="progress-bar" role="progressbar" style="width: ${((currentDimensionQuestion + 1) / dimensionQuestions.length) * 100}%"></div>
@@ -1114,130 +1307,141 @@ function showCurrentDimensionQuestion() {
                 </div>
             </div>
             
-            <div class="comparison-section">
-                <h5 class="mb-3">請選擇這兩個構面之間的關係：</h5>
-                
-                <div class="dematel-relation mb-4">
+            <div class="relation-selection mb-4">
+                <h5>請選擇兩個構面之間的關係：</h5>
+                <div class="dematel-relation">
                     <div class="relation-option">
-                        <input type="radio" name="dim_relation_${question.xKey}_${question.yKey}" value="none" onchange="handleRelationChange(this)" id="dim_relation_${question.xKey}_${question.yKey}_none">
-                        <label for="dim_relation_${question.xKey}_${question.yKey}_none">╳</label>
-                        <small class="d-block text-muted">無關係</small>
+                        <input type="radio" id="dim_relation_${question.xKey}_${question.yKey}_none" name="dim_relation_${question.xKey}_${question.yKey}" value="none" onchange="handleRelationChange(this)">
+                        <label for="dim_relation_${question.xKey}_${question.yKey}_none">╳ (無關係)</label>
                     </div>
                     <div class="relation-option">
-                        <input type="radio" name="dim_relation_${question.xKey}_${question.yKey}" value="forward" onchange="handleRelationChange(this)" id="dim_relation_${question.xKey}_${question.yKey}_forward">
-                        <label for="dim_relation_${question.xKey}_${question.yKey}_forward">→</label>
-                        <small class="d-block text-muted">X影響Y</small>
+                        <input type="radio" id="dim_relation_${question.xKey}_${question.yKey}_forward" name="dim_relation_${question.xKey}_${question.yKey}" value="forward" onchange="handleRelationChange(this)">
+                        <label for="dim_relation_${question.xKey}_${question.yKey}_forward">→ (X影響Y)</label>
                     </div>
                     <div class="relation-option">
-                        <input type="radio" name="dim_relation_${question.xKey}_${question.yKey}" value="backward" onchange="handleRelationChange(this)" id="dim_relation_${question.xKey}_${question.yKey}_backward">
-                        <label for="dim_relation_${question.xKey}_${question.yKey}_backward">←</label>
-                        <small class="d-block text-muted">Y影響X</small>
+                        <input type="radio" id="dim_relation_${question.xKey}_${question.yKey}_backward" name="dim_relation_${question.xKey}_${question.yKey}" value="backward" onchange="handleRelationChange(this)">
+                        <label for="dim_relation_${question.xKey}_${question.yKey}_backward">← (Y影響X)</label>
                     </div>
                     <div class="relation-option">
-                        <input type="radio" name="dim_relation_${question.xKey}_${question.yKey}" value="both" onchange="handleRelationChange(this)" id="dim_relation_${question.xKey}_${question.yKey}_both">
-                        <label for="dim_relation_${question.xKey}_${question.yKey}_both">↔</label>
-                        <small class="d-block text-muted">相互影響</small>
+                        <input type="radio" id="dim_relation_${question.xKey}_${question.yKey}_both" name="dim_relation_${question.xKey}_${question.yKey}" value="both" onchange="handleRelationChange(this)">
+                        <label for="dim_relation_${question.xKey}_${question.yKey}_both">↔ (相互影響)</label>
                     </div>
                 </div>
-                
-                <div class="impact-level" id="dim_forward_${question.xKey}_${question.yKey}_container" style="display: none;">
-                    <h6 class="mb-3">請選擇 ${question.xName} 對 ${question.yName} 的影響程度：</h6>
-                    <div class="impact-options">
-                        <button type="button" class="btn btn-outline-secondary btn-sm impact-btn" onclick="selectImpactLevel(this, 'dim_forward_${question.xKey}_${question.yKey}', 1)">1</button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm impact-btn" onclick="selectImpactLevel(this, 'dim_forward_${question.xKey}_${question.yKey}', 2)">2</button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm impact-btn" onclick="selectImpactLevel(this, 'dim_forward_${question.xKey}_${question.yKey}', 3)">3</button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm impact-btn" onclick="selectImpactLevel(this, 'dim_forward_${question.xKey}_${question.yKey}', 4)">4</button>
-                    </div>
-                    <input type="hidden" name="dim_forward_${question.xKey}_${question.yKey}" value="">
-                    <small class="text-muted d-block mt-2">1=無影響，2=輕微影響，3=中等影響，4=強烈影響</small>
-                </div>
-                
-                <div class="impact-level" id="dim_backward_${question.xKey}_${question.yKey}_container" style="display: none;">
-                    <h6 class="mb-3">請選擇 ${question.yName} 對 ${question.xName} 的影響程度：</h6>
-                    <div class="impact-options">
-                        <button type="button" class="btn btn-outline-secondary btn-sm impact-btn" onclick="selectImpactLevel(this, 'dim_backward_${question.xKey}_${question.yKey}', 1)">1</button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm impact-btn" onclick="selectImpactLevel(this, 'dim_backward_${question.xKey}_${question.yKey}', 2)">2</button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm impact-btn" onclick="selectImpactLevel(this, 'dim_backward_${question.xKey}_${question.yKey}', 3)">3</button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm impact-btn" onclick="selectImpactLevel(this, 'dim_backward_${question.xKey}_${question.yKey}', 4)">4</button>
-                    </div>
-                    <input type="hidden" name="dim_backward_${question.xKey}_${question.yKey}" value="">
-                    <small class="text-muted d-block mt-2">1=無影響，2=輕微影響，3=中等影響，4=強烈影響</small>
-                </div>
+            </div>
+            
+            <div id="impact-selection-${question.xKey}_${question.yKey}" style="display: none;">
+                <!-- 影響程度選擇將根據關係選擇動態生成 -->
             </div>
         </div>
     `;
-    
-    // 顯示導航按鈕（保持之前的設置）
-    if (prevBtn) prevBtn.style.display = currentDimensionQuestion > 0 ? 'inline-block' : 'none';
-    if (nextBtn) nextBtn.style.display = 'none'; // 保持隱藏，因為是自動跳轉模式
-    if (stepNextBtn) stepNextBtn.style.display = 'none';
+    container.appendChild(questionContent);
     
     // 恢復已保存的答案
-    const key = `${question.xKey}_${question.yKey}`;
-    if (dimensionAnswers[key]) {
-        // 恢復關係選擇
-        const relationValue = dimensionAnswers[key][`dim_relation_${question.xKey}_${question.yKey}`];
-        if (relationValue) {
-            const relationRadio = document.querySelector(`input[name="dim_relation_${question.xKey}_${question.yKey}"][value="${relationValue}"]`);
-            if (relationRadio) {
-                relationRadio.checked = true;
-                // 觸發關係變化處理
-                handleRelationChange(relationRadio);
-            }
-        }
+    restoreDimensionAnswers();
+    
+    // 檢查完成狀態
+    checkDimensionCompletion();
+}
+
+// 生成構面題目列表
+function generateDimensionQuestionList() {
+    let html = '<div class="row">';
+    
+    dimensionQuestions.forEach((question, index) => {
+        const isAnswered = isDimensionQuestionAnswered(index);
+        const isCurrent = index === currentDimensionQuestion;
+        const statusClass = isAnswered ? 'btn-success' : 'btn-outline-secondary';
+        const currentClass = isCurrent ? 'border-primary' : '';
         
-        // 恢復影響程度選擇
-        setTimeout(() => {
-            const forwardValue = dimensionAnswers[key][`dim_forward_${question.xKey}_${question.yKey}`];
-            if (forwardValue) {
-                const forwardInput = document.querySelector(`input[name="dim_forward_${question.xKey}_${question.yKey}"]`);
-                if (forwardInput) {
-                    forwardInput.value = forwardValue;
-                    // 更新按鈕狀態
-                    const forwardContainer = document.getElementById(`dim_forward_${question.xKey}_${question.yKey}_container`);
-                    if (forwardContainer) {
-                        const forwardBtn = forwardContainer.querySelector(`.impact-btn[onclick*="${forwardValue}"]`);
-                        if (forwardBtn) {
-                            forwardBtn.classList.remove('btn-outline-secondary');
-                            forwardBtn.classList.add('btn-primary');
-                        }
-                    }
-                }
-            }
-            
-            const backwardValue = dimensionAnswers[key][`dim_backward_${question.xKey}_${question.yKey}`];
-            if (backwardValue) {
-                const backwardInput = document.querySelector(`input[name="dim_backward_${question.xKey}_${question.yKey}"]`);
-                if (backwardInput) {
-                    backwardInput.value = backwardValue;
-                    // 更新按鈕狀態
-                    const backwardContainer = document.getElementById(`dim_backward_${question.xKey}_${question.yKey}_container`);
-                    if (backwardContainer) {
-                        const backwardBtn = backwardContainer.querySelector(`.impact-btn[onclick*="${backwardValue}"]`);
-                        if (backwardBtn) {
-                            backwardBtn.classList.remove('btn-outline-secondary');
-                            backwardBtn.classList.add('btn-primary');
-                        }
-                    }
-                }
-            }
-        }, 100);
-    }
+        html += `
+            <div class="col-md-3 col-sm-4 col-6 mb-2">
+                <button type="button" 
+                        class="btn btn-sm ${statusClass} ${currentClass} w-100" 
+                        onclick="goToDimensionQuestion(${index})"
+                        title="構面 ${question.xKey} vs ${question.yKey}">
+                    ${index + 1}. ${question.xKey} vs ${question.yKey}
+                </button>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    return html;
 }
 
-// 下一題構面問題
-function nextDimensionQuestion() {
-    if (currentDimensionQuestion < dimensionQuestions.length - 1) {
-        currentDimensionQuestion++;
+// 檢查構面題目是否已回答
+function isDimensionQuestionAnswered(questionIndex) {
+    const question = dimensionQuestions[questionIndex];
+    const xKey = question.xKey;
+    const yKey = question.yKey;
+    const key = `${xKey}_${yKey}`;
+    
+    // 首先檢查保存的答案
+    const savedAnswers = dimensionAnswers[key];
+    if (!savedAnswers) return false;
+    
+    // 檢查是否有選擇關係
+    const relationValue = savedAnswers[`dim_relation_${xKey}_${yKey}`];
+    if (!relationValue) return false;
+    
+    // 如果選擇無關係，則已完成
+    if (relationValue === 'none') return true;
+    
+    // 檢查影響程度是否已選擇
+    if (relationValue === 'forward') {
+        return savedAnswers[`dim_forward_${xKey}_${yKey}`];
+    } else if (relationValue === 'backward') {
+        return savedAnswers[`dim_backward_${xKey}_${yKey}`];
+    } else if (relationValue === 'both') {
+        return savedAnswers[`dim_forward_${xKey}_${yKey}`] && savedAnswers[`dim_backward_${xKey}_${yKey}`];
+    }
+    
+    return false;
+}
+
+// 跳轉到指定構面題目
+function goToDimensionQuestion(questionIndex) {
+    if (questionIndex >= 0 && questionIndex < dimensionQuestions.length) {
+        currentDimensionQuestion = questionIndex;
         showCurrentDimensionQuestion();
     }
 }
 
-// 上一題構面問題
-function prevDimensionQuestion() {
-    if (currentDimensionQuestion > 0) {
-        currentDimensionQuestion--;
-        showCurrentDimensionQuestion();
+// 檢查構面完成狀態
+function checkDimensionCompletion() {
+    const allAnswered = dimensionQuestions.every((_, index) => isDimensionQuestionAnswered(index));
+    const step4NextBtn = document.getElementById('step4-next');
+    
+    if (allAnswered && step4NextBtn) {
+        step4NextBtn.style.display = 'inline-block';
+        step4NextBtn.disabled = false;
+        step4NextBtn.classList.add('btn-success');
+        step4NextBtn.classList.remove('btn-secondary');
+    }
+}
+
+// 顯示構面題目列表
+function showDimensionQuestionList() {
+    const questionList = document.getElementById('dimension-question-list');
+    if (questionList) {
+        questionList.innerHTML = generateDimensionQuestionList();
+    }
+}
+
+// 恢復構面答案
+function restoreDimensionAnswers() {
+    const question = dimensionQuestions[currentDimensionQuestion];
+    const xKey = question.xKey;
+    const yKey = question.yKey;
+    
+    // 恢復關係選擇
+    const savedRelation = dimensionAnswers[`${xKey}_${yKey}`]?.[`dim_relation_${xKey}_${yKey}`];
+    if (savedRelation) {
+        const relationInput = document.querySelector(`input[name="dim_relation_${xKey}_${yKey}"][value="${savedRelation}"]`);
+        if (relationInput) {
+            relationInput.checked = true;
+            handleRelationChange(relationInput);
+        }
     }
 }
 
@@ -1289,6 +1493,12 @@ function showCurrentFactorQuestion() {
     const nextBtn = document.getElementById('next-factor-btn');
     const submitBtn = document.getElementById('step5-submit');
     
+    // 檢查容器是否存在
+    if (!container) {
+        console.error('找不到因素比較容器');
+        return;
+    }
+    
     if (currentFactorQuestion >= factorQuestions.length) {
         // 所有問題已完成
         container.innerHTML = `
@@ -1306,12 +1516,30 @@ function showCurrentFactorQuestion() {
     
     const question = factorQuestions[currentFactorQuestion];
     
+    // 清空容器
+    container.innerHTML = '';
+    
+    // 添加題目導航
+    const navigationDiv = document.createElement('div');
+    navigationDiv.className = 'question-navigation mb-4';
+    navigationDiv.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0">因素關係題目導航</h6>
+            <button type="button" class="btn btn-sm btn-outline-primary" onclick="showFactorQuestionList()">查看所有題目</button>
+        </div>
+        <div class="question-list" id="factor-question-list">
+            ${generateFactorQuestionList()}
+        </div>
+    `;
+    container.appendChild(navigationDiv);
+    
     // 顯示導航按鈕
     if (prevBtn) prevBtn.style.display = currentFactorQuestion > 0 ? 'inline-block' : 'none';
     if (nextBtn) nextBtn.style.display = 'none'; // 保持隱藏，因為是自動跳轉模式
     if (submitBtn) submitBtn.style.display = 'none';
     
-    container.innerHTML = `
+    const questionContent = document.createElement('div');
+    questionContent.innerHTML = `
         <div class="question-progress mb-3">
             <div class="progress">
                 <div class="progress-bar" role="progressbar" style="width: ${((currentFactorQuestion + 1) / factorQuestions.length) * 100}%"></div>
@@ -1367,130 +1595,141 @@ function showCurrentFactorQuestion() {
                 </div>
             </div>
             
-            <div class="comparison-section">
-                <h5 class="mb-3">請選擇這兩個因素之間的關係：</h5>
-                
-                <div class="dematel-relation mb-4">
+            <div class="relation-selection mb-4">
+                <h5>請選擇兩個因素之間的關係：</h5>
+                <div class="dematel-relation">
                     <div class="relation-option">
-                        <input type="radio" name="factor_relation_${question.xKey}_${question.yKey}" value="none" onchange="handleRelationChange(this)" id="factor_relation_${question.xKey}_${question.yKey}_none">
-                        <label for="factor_relation_${question.xKey}_${question.yKey}_none">╳</label>
-                        <small class="d-block text-muted">無關係</small>
+                        <input type="radio" id="factor_relation_${question.xKey}_${question.yKey}_none" name="factor_relation_${question.xKey}_${question.yKey}" value="none" onchange="handleRelationChange(this)">
+                        <label for="factor_relation_${question.xKey}_${question.yKey}_none">╳ (無關係)</label>
                     </div>
                     <div class="relation-option">
-                        <input type="radio" name="factor_relation_${question.xKey}_${question.yKey}" value="forward" onchange="handleRelationChange(this)" id="factor_relation_${question.xKey}_${question.yKey}_forward">
-                        <label for="factor_relation_${question.xKey}_${question.yKey}_forward">→</label>
-                        <small class="d-block text-muted">X影響Y</small>
+                        <input type="radio" id="factor_relation_${question.xKey}_${question.yKey}_forward" name="factor_relation_${question.xKey}_${question.yKey}" value="forward" onchange="handleRelationChange(this)">
+                        <label for="factor_relation_${question.xKey}_${question.yKey}_forward">→ (X影響Y)</label>
                     </div>
                     <div class="relation-option">
-                        <input type="radio" name="factor_relation_${question.xKey}_${question.yKey}" value="backward" onchange="handleRelationChange(this)" id="factor_relation_${question.xKey}_${question.yKey}_backward">
-                        <label for="factor_relation_${question.xKey}_${question.yKey}_backward">←</label>
-                        <small class="d-block text-muted">Y影響X</small>
+                        <input type="radio" id="factor_relation_${question.xKey}_${question.yKey}_backward" name="factor_relation_${question.xKey}_${question.yKey}" value="backward" onchange="handleRelationChange(this)">
+                        <label for="factor_relation_${question.xKey}_${question.yKey}_backward">← (Y影響X)</label>
                     </div>
                     <div class="relation-option">
-                        <input type="radio" name="factor_relation_${question.xKey}_${question.yKey}" value="both" onchange="handleRelationChange(this)" id="factor_relation_${question.xKey}_${question.yKey}_both">
-                        <label for="factor_relation_${question.xKey}_${question.yKey}_both">↔</label>
-                        <small class="d-block text-muted">相互影響</small>
+                        <input type="radio" id="factor_relation_${question.xKey}_${question.yKey}_both" name="factor_relation_${question.xKey}_${question.yKey}" value="both" onchange="handleRelationChange(this)">
+                        <label for="factor_relation_${question.xKey}_${question.yKey}_both">↔ (相互影響)</label>
                     </div>
                 </div>
-                
-                <div class="impact-level" id="factor_forward_${question.xKey}_${question.yKey}_container" style="display: none;">
-                    <h6 class="mb-3">請選擇 ${question.xName} 對 ${question.yName} 的影響程度：</h6>
-                    <div class="impact-options">
-                        <button type="button" class="btn btn-outline-secondary btn-sm impact-btn" onclick="selectImpactLevel(this, 'factor_forward_${question.xKey}_${question.yKey}', 1)">1</button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm impact-btn" onclick="selectImpactLevel(this, 'factor_forward_${question.xKey}_${question.yKey}', 2)">2</button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm impact-btn" onclick="selectImpactLevel(this, 'factor_forward_${question.xKey}_${question.yKey}', 3)">3</button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm impact-btn" onclick="selectImpactLevel(this, 'factor_forward_${question.xKey}_${question.yKey}', 4)">4</button>
-                    </div>
-                    <input type="hidden" name="factor_forward_${question.xKey}_${question.yKey}" value="">
-                    <small class="text-muted d-block mt-2">1=無影響，2=輕微影響，3=中等影響，4=強烈影響</small>
-                </div>
-                
-                <div class="impact-level" id="factor_backward_${question.xKey}_${question.yKey}_container" style="display: none;">
-                    <h6 class="mb-3">請選擇 ${question.yName} 對 ${question.xName} 的影響程度：</h6>
-                    <div class="impact-options">
-                        <button type="button" class="btn btn-outline-secondary btn-sm impact-btn" onclick="selectImpactLevel(this, 'factor_backward_${question.xKey}_${question.yKey}', 1)">1</button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm impact-btn" onclick="selectImpactLevel(this, 'factor_backward_${question.xKey}_${question.yKey}', 2)">2</button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm impact-btn" onclick="selectImpactLevel(this, 'factor_backward_${question.xKey}_${question.yKey}', 3)">3</button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm impact-btn" onclick="selectImpactLevel(this, 'factor_backward_${question.xKey}_${question.yKey}', 4)">4</button>
-                    </div>
-                    <input type="hidden" name="factor_backward_${question.xKey}_${question.yKey}" value="">
-                    <small class="text-muted d-block mt-2">1=無影響，2=輕微影響，3=中等影響，4=強烈影響</small>
-                </div>
+            </div>
+            
+            <div id="impact-selection-${question.xKey}_${question.yKey}" style="display: none;">
+                <!-- 影響程度選擇將根據關係選擇動態生成 -->
             </div>
         </div>
     `;
-    
-    // 顯示導航按鈕（保持之前的設置）
-    if (prevBtn) prevBtn.style.display = currentFactorQuestion > 0 ? 'inline-block' : 'none';
-    if (nextBtn) nextBtn.style.display = 'none'; // 保持隱藏，因為是自動跳轉模式
-    if (submitBtn) submitBtn.style.display = 'none';
+    container.appendChild(questionContent);
     
     // 恢復已保存的答案
-    const key = `${question.xKey}_${question.yKey}`;
-    if (factorAnswers[key]) {
-        // 恢復關係選擇
-        const relationValue = factorAnswers[key][`factor_relation_${question.xKey}_${question.yKey}`];
-        if (relationValue) {
-            const relationRadio = document.querySelector(`input[name="factor_relation_${question.xKey}_${question.yKey}"][value="${relationValue}"]`);
-            if (relationRadio) {
-                relationRadio.checked = true;
-                // 觸發關係變化處理
-                handleRelationChange(relationRadio);
-            }
-        }
+    restoreFactorAnswers();
+    
+    // 檢查完成狀態
+    checkFactorCompletion();
+}
+
+// 生成因素題目列表
+function generateFactorQuestionList() {
+    let html = '<div class="row">';
+    
+    factorQuestions.forEach((question, index) => {
+        const isAnswered = isFactorQuestionAnswered(index);
+        const isCurrent = index === currentFactorQuestion;
+        const statusClass = isAnswered ? 'btn-success' : 'btn-outline-secondary';
+        const currentClass = isCurrent ? 'border-primary' : '';
         
-        // 恢復影響程度選擇
-        setTimeout(() => {
-            const forwardValue = factorAnswers[key][`factor_forward_${question.xKey}_${question.yKey}`];
-            if (forwardValue) {
-                const forwardInput = document.querySelector(`input[name="factor_forward_${question.xKey}_${question.yKey}"]`);
-                if (forwardInput) {
-                    forwardInput.value = forwardValue;
-                    // 更新按鈕狀態
-                    const forwardContainer = document.getElementById(`factor_forward_${question.xKey}_${question.yKey}_container`);
-                    if (forwardContainer) {
-                        const forwardBtn = forwardContainer.querySelector(`.impact-btn[onclick*="${forwardValue}"]`);
-                        if (forwardBtn) {
-                            forwardBtn.classList.remove('btn-outline-secondary');
-                            forwardBtn.classList.add('btn-primary');
-                        }
-                    }
-                }
-            }
-            
-            const backwardValue = factorAnswers[key][`factor_backward_${question.xKey}_${question.yKey}`];
-            if (backwardValue) {
-                const backwardInput = document.querySelector(`input[name="factor_backward_${question.xKey}_${question.yKey}"]`);
-                if (backwardInput) {
-                    backwardInput.value = backwardValue;
-                    // 更新按鈕狀態
-                    const backwardContainer = document.getElementById(`factor_backward_${question.xKey}_${question.yKey}_container`);
-                    if (backwardContainer) {
-                        const backwardBtn = backwardContainer.querySelector(`.impact-btn[onclick*="${backwardValue}"]`);
-                        if (backwardBtn) {
-                            backwardBtn.classList.remove('btn-outline-secondary');
-                            backwardBtn.classList.add('btn-primary');
-                        }
-                    }
-                }
-            }
-        }, 100);
-    }
+        html += `
+            <div class="col-md-3 col-sm-4 col-6 mb-2">
+                <button type="button" 
+                        class="btn btn-sm ${statusClass} ${currentClass} w-100" 
+                        onclick="goToFactorQuestion(${index})"
+                        title="因素 ${question.xKey} vs ${question.yKey}">
+                    ${index + 1}. ${question.xKey} vs ${question.yKey}
+                </button>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    return html;
 }
 
-// 下一題因素問題
-function nextFactorQuestion() {
-    if (currentFactorQuestion < factorQuestions.length - 1) {
-        currentFactorQuestion++;
+// 檢查因素題目是否已回答
+function isFactorQuestionAnswered(questionIndex) {
+    const question = factorQuestions[questionIndex];
+    const xKey = question.xKey;
+    const yKey = question.yKey;
+    const key = `${xKey}_${yKey}`;
+    
+    // 首先檢查保存的答案
+    const savedAnswers = factorAnswers[key];
+    if (!savedAnswers) return false;
+    
+    // 檢查是否有選擇關係
+    const relationValue = savedAnswers[`factor_relation_${xKey}_${yKey}`];
+    if (!relationValue) return false;
+    
+    // 如果選擇無關係，則已完成
+    if (relationValue === 'none') return true;
+    
+    // 檢查影響程度是否已選擇
+    if (relationValue === 'forward') {
+        return savedAnswers[`factor_forward_${xKey}_${yKey}`];
+    } else if (relationValue === 'backward') {
+        return savedAnswers[`factor_backward_${xKey}_${yKey}`];
+    } else if (relationValue === 'both') {
+        return savedAnswers[`factor_forward_${xKey}_${yKey}`] && savedAnswers[`factor_backward_${xKey}_${yKey}`];
+    }
+    
+    return false;
+}
+
+// 跳轉到指定因素題目
+function goToFactorQuestion(questionIndex) {
+    if (questionIndex >= 0 && questionIndex < factorQuestions.length) {
+        currentFactorQuestion = questionIndex;
         showCurrentFactorQuestion();
     }
 }
 
-// 上一題因素問題
-function prevFactorQuestion() {
-    if (currentFactorQuestion > 0) {
-        currentFactorQuestion--;
-        showCurrentFactorQuestion();
+// 檢查因素完成狀態
+function checkFactorCompletion() {
+    const allAnswered = factorQuestions.every((_, index) => isFactorQuestionAnswered(index));
+    const submitBtn = document.getElementById('step5-submit');
+    
+    if (allAnswered && submitBtn) {
+        submitBtn.style.display = 'inline-block';
+        submitBtn.disabled = false;
+        submitBtn.classList.add('btn-success');
+        submitBtn.classList.remove('btn-secondary');
+    }
+}
+
+// 顯示因素題目列表
+function showFactorQuestionList() {
+    const questionList = document.getElementById('factor-question-list');
+    if (questionList) {
+        questionList.innerHTML = generateFactorQuestionList();
+    }
+}
+
+// 恢復因素答案
+function restoreFactorAnswers() {
+    const question = factorQuestions[currentFactorQuestion];
+    const xKey = question.xKey;
+    const yKey = question.yKey;
+    
+    // 恢復關係選擇
+    const savedRelation = factorAnswers[`${xKey}_${yKey}`]?.[`factor_relation_${xKey}_${yKey}`];
+    if (savedRelation) {
+        const relationInput = document.querySelector(`input[name="factor_relation_${xKey}_${yKey}"][value="${savedRelation}"]`);
+        if (relationInput) {
+            relationInput.checked = true;
+            handleRelationChange(relationInput);
+        }
     }
 }
 
@@ -1526,6 +1765,13 @@ function selectImpactLevel(button, name, value) {
         dimensionAnswers[key][name] = value;
         console.log(`保存構面答案: ${key}.${name} = ${value}`);
         console.log('當前構面答案狀態:', dimensionAnswers);
+        
+        // 自動保存答案
+        autoSaveAnswers();
+        
+        // 立即更新題目導航狀態
+        updateDimensionQuestionNavigation();
+        
         validateStep4();
     } else if (name.startsWith('factor_')) {
         const question = factorQuestions[currentFactorQuestion];
@@ -1536,6 +1782,13 @@ function selectImpactLevel(button, name, value) {
         factorAnswers[key][name] = value;
         console.log(`保存因素答案: ${key}.${name} = ${value}`);
         console.log('當前因素答案狀態:', factorAnswers);
+        
+        // 自動保存答案
+        autoSaveAnswers();
+        
+        // 立即更新題目導航狀態
+        updateFactorQuestionNavigation();
+        
         validateStep5();
     }
 }
@@ -1546,14 +1799,18 @@ function validateStep4() {
     console.log('當前問題索引:', currentDimensionQuestion);
     console.log('總問題數量:', dimensionQuestions.length);
     
-    if (currentDimensionQuestion >= dimensionQuestions.length) {
+    // 檢查所有問題是否已完成
+    const allAnswered = dimensionQuestions.every((_, index) => isDimensionQuestionAnswered(index));
+    
+    if (allAnswered) {
         // 所有問題已完成，顯示並啟用下一步按鈕
         console.log('所有問題已完成，啟用下一步按鈕');
         const stepNextBtn = document.getElementById('step4-next');
         if (stepNextBtn) {
             stepNextBtn.style.display = 'inline-block';
             stepNextBtn.disabled = false;
-            stepNextBtn.classList.add('btn-pulse'); // 添加視覺反饋
+            stepNextBtn.classList.add('btn-success');
+            stepNextBtn.classList.remove('btn-secondary');
             console.log('下一步按鈕已啟用');
         } else {
             console.error('找不到step4-next按鈕');
@@ -1561,6 +1818,7 @@ function validateStep4() {
         return;
     }
     
+    // 如果當前問題完成，自動跳轉到下一題
     const question = dimensionQuestions[currentDimensionQuestion];
     const xKey = question.xKey;
     const yKey = question.yKey;
@@ -1628,7 +1886,8 @@ function validateStep4() {
                 if (stepNextBtn) {
                     stepNextBtn.style.display = 'inline-block';
                     stepNextBtn.disabled = false;
-                    stepNextBtn.classList.add('btn-pulse'); // 添加視覺反饋
+                    stepNextBtn.classList.add('btn-success');
+                    stepNextBtn.classList.remove('btn-secondary');
                     console.log('下一步按鈕已啟用');
                 } else {
                     console.error('找不到step4-next按鈕');
@@ -1642,16 +1901,22 @@ function validateStep4() {
 function validateStep5() {
     console.log('=== 開始驗證步驟5 ===');
     
-    if (currentFactorQuestion >= factorQuestions.length) {
+    // 檢查所有問題是否已完成
+    const allAnswered = factorQuestions.every((_, index) => isFactorQuestionAnswered(index));
+    
+    if (allAnswered) {
         // 所有問題已完成，顯示並啟用提交按鈕
         const submitBtn = document.getElementById('step5-submit');
         if (submitBtn) {
             submitBtn.style.display = 'inline-block';
             submitBtn.disabled = false;
+            submitBtn.classList.add('btn-success');
+            submitBtn.classList.remove('btn-secondary');
         }
         return;
     }
     
+    // 如果當前問題完成，自動跳轉到下一題
     const question = factorQuestions[currentFactorQuestion];
     const xKey = question.xKey;
     const yKey = question.yKey;
@@ -1715,6 +1980,8 @@ function validateStep5() {
                 if (submitBtn) {
                     submitBtn.style.display = 'inline-block';
                     submitBtn.disabled = false;
+                    submitBtn.classList.add('btn-success');
+                    submitBtn.classList.remove('btn-secondary');
                 }
             }
         }, 500); // 延遲500毫秒讓用戶看到選擇結果
@@ -1746,6 +2013,12 @@ function handleRelationChange(input) {
         dimensionAnswers[key][`${prefix}_relation_${x}_${y}`] = relationValue;
         console.log(`保存構面關係: ${key}.${prefix}_relation_${x}_${y} = ${relationValue}`);
         console.log('當前構面答案狀態:', dimensionAnswers);
+        
+        // 自動保存答案
+        autoSaveAnswers();
+        
+        // 立即更新題目導航狀態
+        updateDimensionQuestionNavigation();
     } else if (prefix === 'factor') {
         const question = factorQuestions[currentFactorQuestion];
         const key = `${question.xKey}_${question.yKey}`;
@@ -1755,68 +2028,110 @@ function handleRelationChange(input) {
         factorAnswers[key][`${prefix}_relation_${x}_${y}`] = relationValue;
         console.log(`保存因素關係: ${key}.${prefix}_relation_${x}_${y} = ${relationValue}`);
         console.log('當前因素答案狀態:', factorAnswers);
+        
+        // 自動保存答案
+        autoSaveAnswers();
+        
+        // 立即更新題目導航狀態
+        updateFactorQuestionNavigation();
     }
     
-    // 獲取分數選項容器
-    const forwardContainer = document.getElementById(`${prefix}_forward_${x}_${y}_container`);
-    const backwardContainer = document.getElementById(`${prefix}_backward_${x}_${y}_container`);
+    // 獲取影響程度選擇容器
+    const impactContainer = document.getElementById(`impact-selection-${x}_${y}`);
     
-    // 重置所有分數選擇
-    if (forwardContainer) {
-        const forwardButtons = forwardContainer.querySelectorAll('.impact-btn');
-        forwardButtons.forEach(btn => {
-            btn.classList.remove('btn-primary');
-            btn.classList.add('btn-outline-secondary');
-        });
-        const forwardInput = forwardContainer.querySelector('input[type="hidden"]');
-        if (forwardInput) forwardInput.value = '';
+    if (!impactContainer) {
+        console.error(`找不到影響程度選擇容器: impact-selection-${x}_${y}`);
+        return;
     }
     
-    if (backwardContainer) {
-        const backwardButtons = backwardContainer.querySelectorAll('.impact-btn');
-        backwardButtons.forEach(btn => {
-            btn.classList.remove('btn-primary');
-            btn.classList.add('btn-outline-secondary');
-        });
-        const backwardInput = backwardContainer.querySelector('input[type="hidden"]');
-        if (backwardInput) backwardInput.value = '';
-    }
+    // 清空容器
+    impactContainer.innerHTML = '';
     
-    // 根據關係類型控制分數選項的顯示
+    // 根據關係類型生成影響程度選擇界面
     switch (relationValue) {
         case 'none':
             console.log(`隱藏 ${x}-${y} 的所有影響程度選項`);
-            if (forwardContainer) forwardContainer.style.display = 'none';
-            if (backwardContainer) backwardContainer.style.display = 'none';
+            impactContainer.style.display = 'none';
             break;
         case 'forward':
             console.log(`只顯示 ${x}-${y} 的正向影響選項`);
-            if (forwardContainer) forwardContainer.style.display = 'block';
-            if (backwardContainer) backwardContainer.style.display = 'none';
+            impactContainer.style.display = 'block';
+            generateImpactSelection(impactContainer, prefix, x, y, 'forward');
             break;
         case 'backward':
             console.log(`只顯示 ${x}-${y} 的反向影響選項`);
-            if (forwardContainer) forwardContainer.style.display = 'none';
-            if (backwardContainer) backwardContainer.style.display = 'block';
+            impactContainer.style.display = 'block';
+            generateImpactSelection(impactContainer, prefix, x, y, 'backward');
             break;
         case 'both':
             console.log(`顯示 ${x}-${y} 的雙向影響選項`);
-            if (forwardContainer) forwardContainer.style.display = 'block';
-            if (backwardContainer) backwardContainer.style.display = 'block';
+            impactContainer.style.display = 'block';
+            generateImpactSelection(impactContainer, prefix, x, y, 'both');
             break;
     }
     
-    // 雙向同步功能已移除，用戶可以獨立選擇每個方向的分數
-    if (relationValue === 'both') {
-        console.log('雙向關係選擇：用戶可以為每個方向獨立選擇不同的分數');
-    }
-    
-    // 根據當前步驟調用相應的驗證函數
+    // 觸發驗證
     if (prefix === 'dim') {
         validateStep4();
     } else if (prefix === 'factor') {
         validateStep5();
     }
+}
+
+// 生成影響程度選擇界面
+function generateImpactSelection(container, prefix, x, y, relationType) {
+    let html = '';
+    
+    if (relationType === 'forward' || relationType === 'both') {
+        const xName = prefix === 'dim' ? 
+            dimensions[x].name : 
+            factors[x].name;
+        const yName = prefix === 'dim' ? 
+            dimensions[y].name : 
+            factors[y].name;
+        
+        html += `
+            <div class="impact-level mb-3">
+                <h6 class="mb-3">請選擇 ${xName} 對 ${yName} 的影響程度：</h6>
+                <div class="impact-options">
+                    <button type="button" class="btn btn-outline-secondary btn-sm impact-btn" onclick="selectImpactLevel(this, '${prefix}_forward_${x}_${y}', 1)">1</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm impact-btn" onclick="selectImpactLevel(this, '${prefix}_forward_${x}_${y}', 2)">2</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm impact-btn" onclick="selectImpactLevel(this, '${prefix}_forward_${x}_${y}', 3)">3</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm impact-btn" onclick="selectImpactLevel(this, '${prefix}_forward_${x}_${y}', 4)">4</button>
+                </div>
+                <input type="hidden" name="${prefix}_forward_${x}_${y}" value="">
+                <small class="text-muted d-block mt-2">1=低影響，2=中度影響，3=高度影響，4=極高影響</small>
+            </div>
+        `;
+    }
+    
+    if (relationType === 'backward' || relationType === 'both') {
+        const xName = prefix === 'dim' ? 
+            dimensions[x].name : 
+            factors[x].name;
+        const yName = prefix === 'dim' ? 
+            dimensions[y].name : 
+            factors[y].name;
+        
+        html += `
+            <div class="impact-level mb-3">
+                <h6 class="mb-3">請選擇 ${yName} 對 ${xName} 的影響程度：</h6>
+                <div class="impact-options">
+                    <button type="button" class="btn btn-outline-secondary btn-sm impact-btn" onclick="selectImpactLevel(this, '${prefix}_backward_${x}_${y}', 1)">1</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm impact-btn" onclick="selectImpactLevel(this, '${prefix}_backward_${x}_${y}', 2)">2</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm impact-btn" onclick="selectImpactLevel(this, '${prefix}_backward_${x}_${y}', 3)">3</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm impact-btn" onclick="selectImpactLevel(this, '${prefix}_backward_${x}_${y}', 4)">4</button>
+                </div>
+                <input type="hidden" name="${prefix}_backward_${x}_${y}" value="">
+                <small class="text-muted d-block mt-2">1=低影響，2=中度影響，3=高度影響，4=極高影響</small>
+            </div>
+        `;
+    }
+    
+    container.innerHTML = html;
+    
+    // 恢復已保存的影響程度選擇
+    restoreImpactLevels(prefix, x, y, relationType);
 }
 
 // 添加調試按鈕到步驟4
@@ -1913,13 +2228,25 @@ function nextStep() {
         currentStep++;
         document.getElementById(`step${currentStep}`).classList.add('active');
         
-        // 如果進入步驟3，初始化BWM問題
-        if (currentStep === 3) {
+        // 重新初始化步驟內容
+        if (currentStep === 2) {
+            generateFactorExplanations();
+        } else if (currentStep === 3) {
             generateBWMSelections();
+            showCurrentBWMQuestion();
+        } else if (currentStep === 4) {
+            generateDEMATELDimensionComparison();
+            showCurrentDimensionQuestion();
+        } else if (currentStep === 5) {
+            generateDEMATELFactorComparison();
+            showCurrentFactorQuestion();
         }
         
         updateStepIndicator();
         updateProgress();
+        
+        // 自動保存當前狀態
+        autoSaveAnswers();
     }
 }
 
@@ -1935,8 +2262,25 @@ function prevStep() {
             showHeaderContent();
         }
         
+        // 重新初始化步驟內容
+        if (currentStep === 2) {
+            generateFactorExplanations();
+        } else if (currentStep === 3) {
+            generateBWMSelections();
+            showCurrentBWMQuestion();
+        } else if (currentStep === 4) {
+            generateDEMATELDimensionComparison();
+            showCurrentDimensionQuestion();
+        } else if (currentStep === 5) {
+            generateDEMATELFactorComparison();
+            showCurrentFactorQuestion();
+        }
+        
         updateStepIndicator();
         updateProgress();
+        
+        // 自動保存當前狀態
+        autoSaveAnswers();
     }
 }
 
@@ -1991,31 +2335,25 @@ function updateProgress() {
 
 // 驗證步驟一的基本資料
 function validateStep1() {
-    const name = document.querySelector('input[name="name"]').value.trim();
     const gender = document.querySelector('input[name="gender"]:checked');
-    const age = document.querySelector('input[name="age"]').value.trim();
-    const education = document.querySelector('input[name="education"]').value.trim();
+    const age = document.querySelector('input[name="age"]:checked');
+    const education = document.querySelector('input[name="education"]:checked');
     const electronicsIndustry = document.querySelector('input[name="electronics_industry"]:checked');
-    const experience = document.querySelector('input[name="experience"]').value.trim();
+    const experience = document.querySelector('input[name="experience"]:checked');
     
     // 檢查所有欄位是否已填寫
-    if (!name) {
-        alert('請輸入姓名');
-        return false;
-    }
-    
     if (!gender) {
         alert('請選擇性別');
         return false;
     }
     
     if (!age) {
-        alert('請輸入年齡');
+        alert('請選擇年齡');
         return false;
     }
     
     if (!education) {
-        alert('請輸入教育程度');
+        alert('請選擇教育程度');
         return false;
     }
     
@@ -2025,21 +2363,7 @@ function validateStep1() {
     }
     
     if (!experience) {
-        alert('請輸入數位轉型相關年資');
-        return false;
-    }
-    
-    // 檢查年齡範圍
-    const ageNum = parseInt(age);
-    if (isNaN(ageNum) || ageNum < 18 || ageNum > 100) {
-        alert('請輸入有效的年齡（18-100歲）');
-        return false;
-    }
-    
-    // 檢查年資範圍
-    const experienceNum = parseInt(experience);
-    if (isNaN(experienceNum) || experienceNum < 0 || experienceNum > 50) {
-        alert('請輸入有效的年資（0-50年）');
+        alert('請選擇數位轉型相關年資');
         return false;
     }
     
@@ -2055,11 +2379,10 @@ function handleFormSubmit(e) {
         // 收集基本資料
         const basicData = {
             gender: document.querySelector('input[name="gender"]:checked')?.value,
-            age: document.querySelector('input[name="age"]')?.value,
-            education: document.querySelector('input[name="education"]')?.value,
+            age: document.querySelector('input[name="age"]:checked')?.value,
+            education: document.querySelector('input[name="education"]:checked')?.value,
             electronics_industry: document.querySelector('input[name="electronics_industry"]:checked')?.value,
-            experience: document.querySelector('input[name="experience"]')?.value,
-            name: document.querySelector('input[name="name"]')?.value
+            experience: document.querySelector('input[name="experience"]:checked')?.value
         };
         
         console.log('基本資料:', basicData);
@@ -2124,6 +2447,9 @@ function handleFormSubmit(e) {
         // 顯示結果
         displayResults(surveyData);
         
+        // 清除保存的答案
+        clearAllAnswers();
+        
         // 滾動到頁面頂部
         window.scrollTo(0, 0);
         
@@ -2156,7 +2482,6 @@ function displayResults(data) {
                 <div class="col-md-6">
                     <h4>基本資料</h4>
                     <ul class="list-group">
-                        <li class="list-group-item">姓名: ${data.basic.name || '未填寫'}</li>
                         <li class="list-group-item">性別: ${data.basic.gender === 'male' ? '男' : data.basic.gender === 'female' ? '女' : '未填寫'}</li>
                         <li class="list-group-item">年齡: ${data.basic.age || '未填寫'}</li>
                         <li class="list-group-item">教育程度: ${data.basic.education || '未填寫'}</li>
@@ -2254,7 +2579,6 @@ function formatEmailContent(data) {
     
     // 基本資料
     content += `【基本資料】\n`;
-    content += `姓名：${data.basic.name || '未填寫'}\n`;
     content += `性別：${data.basic.gender === 'male' ? '男' : data.basic.gender === 'female' ? '女' : '未填寫'}\n`;
     content += `年齡：${data.basic.age || '未填寫'}\n`;
     content += `教育程度：${data.basic.education || '未填寫'}\n`;
@@ -2409,4 +2733,332 @@ function restoreBWMAnswers() {
             });
         }
     }
-} 
+}
+
+// 恢復影響程度選擇
+function restoreImpactLevels(prefix, x, y, relationType) {
+    setTimeout(() => {
+        if (prefix === 'dim') {
+            const question = dimensionQuestions[currentDimensionQuestion];
+            const key = `${question.xKey}_${question.yKey}`;
+            const savedAnswers = dimensionAnswers[key];
+            
+            if (savedAnswers) {
+                if ((relationType === 'forward' || relationType === 'both') && savedAnswers[`${prefix}_forward_${x}_${y}`]) {
+                    const forwardValue = savedAnswers[`${prefix}_forward_${x}_${y}`];
+                    const forwardInput = document.querySelector(`input[name="${prefix}_forward_${x}_${y}"]`);
+                    if (forwardInput) {
+                        forwardInput.value = forwardValue;
+                        // 查找对应的按钮并设置选中状态
+                        const impactContainer = document.getElementById(`impact-selection-${x}_${y}`);
+                        if (impactContainer) {
+                            const forwardContainer = impactContainer.querySelector('.impact-level');
+                            if (forwardContainer) {
+                                const buttons = forwardContainer.querySelectorAll('.impact-btn');
+                                buttons.forEach(btn => {
+                                    const onclick = btn.getAttribute('onclick');
+                                    if (onclick && onclick.includes(`${prefix}_forward_${x}_${y}`) && onclick.includes(`, ${forwardValue})`)) {
+                                        btn.classList.remove('btn-outline-secondary');
+                                        btn.classList.add('btn-primary');
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+                
+                if ((relationType === 'backward' || relationType === 'both') && savedAnswers[`${prefix}_backward_${x}_${y}`]) {
+                    const backwardValue = savedAnswers[`${prefix}_backward_${x}_${y}`];
+                    const backwardInput = document.querySelector(`input[name="${prefix}_backward_${x}_${y}"]`);
+                    if (backwardInput) {
+                        backwardInput.value = backwardValue;
+                        // 查找对应的按钮并设置选中状态
+                        const impactContainer = document.getElementById(`impact-selection-${x}_${y}`);
+                        if (impactContainer) {
+                            const backwardContainer = impactContainer.querySelectorAll('.impact-level')[1]; // 第二个impact-level是反向的
+                            if (backwardContainer) {
+                                const buttons = backwardContainer.querySelectorAll('.impact-btn');
+                                buttons.forEach(btn => {
+                                    const onclick = btn.getAttribute('onclick');
+                                    if (onclick && onclick.includes(`${prefix}_backward_${x}_${y}`) && onclick.includes(`, ${backwardValue})`)) {
+                                        btn.classList.remove('btn-outline-secondary');
+                                        btn.classList.add('btn-primary');
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        } else if (prefix === 'factor') {
+            const question = factorQuestions[currentFactorQuestion];
+            const key = `${question.xKey}_${question.yKey}`;
+            const savedAnswers = factorAnswers[key];
+            
+            if (savedAnswers) {
+                if ((relationType === 'forward' || relationType === 'both') && savedAnswers[`${prefix}_forward_${x}_${y}`]) {
+                    const forwardValue = savedAnswers[`${prefix}_forward_${x}_${y}`];
+                    const forwardInput = document.querySelector(`input[name="${prefix}_forward_${x}_${y}"]`);
+                    if (forwardInput) {
+                        forwardInput.value = forwardValue;
+                        // 查找对应的按钮并设置选中状态
+                        const impactContainer = document.getElementById(`impact-selection-${x}_${y}`);
+                        if (impactContainer) {
+                            const forwardContainer = impactContainer.querySelector('.impact-level');
+                            if (forwardContainer) {
+                                const buttons = forwardContainer.querySelectorAll('.impact-btn');
+                                buttons.forEach(btn => {
+                                    const onclick = btn.getAttribute('onclick');
+                                    if (onclick && onclick.includes(`${prefix}_forward_${x}_${y}`) && onclick.includes(`, ${forwardValue})`)) {
+                                        btn.classList.remove('btn-outline-secondary');
+                                        btn.classList.add('btn-primary');
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+                
+                if ((relationType === 'backward' || relationType === 'both') && savedAnswers[`${prefix}_backward_${x}_${y}`]) {
+                    const backwardValue = savedAnswers[`${prefix}_backward_${x}_${y}`];
+                    const backwardInput = document.querySelector(`input[name="${prefix}_backward_${x}_${y}"]`);
+                    if (backwardInput) {
+                        backwardInput.value = backwardValue;
+                        // 查找对应的按钮并设置选中状态
+                        const impactContainer = document.getElementById(`impact-selection-${x}_${y}`);
+                        if (impactContainer) {
+                            const backwardContainer = impactContainer.querySelectorAll('.impact-level')[1]; // 第二个impact-level是反向的
+                            if (backwardContainer) {
+                                const buttons = backwardContainer.querySelectorAll('.impact-btn');
+                                buttons.forEach(btn => {
+                                    const onclick = btn.getAttribute('onclick');
+                                    if (onclick && onclick.includes(`${prefix}_backward_${x}_${y}`) && onclick.includes(`, ${backwardValue})`)) {
+                                        btn.classList.remove('btn-outline-secondary');
+                                        btn.classList.add('btn-primary');
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }, 100);
+}
+
+// 下一題構面問題
+function nextDimensionQuestion() {
+    if (currentDimensionQuestion < dimensionQuestions.length - 1) {
+        currentDimensionQuestion++;
+        showCurrentDimensionQuestion();
+    }
+}
+
+// 上一題構面問題
+function prevDimensionQuestion() {
+    if (currentDimensionQuestion > 0) {
+        currentDimensionQuestion--;
+        showCurrentDimensionQuestion();
+    }
+}
+
+// 下一題因素問題
+function nextFactorQuestion() {
+    if (currentFactorQuestion < factorQuestions.length - 1) {
+        currentFactorQuestion++;
+        showCurrentFactorQuestion();
+    }
+}
+
+// 上一題因素問題
+function prevFactorQuestion() {
+    if (currentFactorQuestion > 0) {
+        currentFactorQuestion--;
+        showCurrentFactorQuestion();
+    }
+}
+
+// 答案持久化功能
+const STORAGE_KEY = 'survey_answers_v1';
+
+// 保存所有答案到localStorage
+function saveAllAnswers() {
+    const allAnswers = {
+        bwmAnswers: bwmAnswers,
+        dimensionAnswers: dimensionAnswers,
+        factorAnswers: factorAnswers,
+        currentStep: currentStep,
+        currentBWMQuestion: currentBWMQuestion,
+        currentDimensionQuestion: currentDimensionQuestion,
+        currentFactorQuestion: currentFactorQuestion,
+        timestamp: Date.now()
+    };
+    
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(allAnswers));
+        console.log('所有答案已保存到localStorage');
+    } catch (error) {
+        console.error('保存答案失败:', error);
+    }
+}
+
+// 从localStorage恢复所有答案
+function restoreAllAnswers() {
+    try {
+        const savedData = localStorage.getItem(STORAGE_KEY);
+        if (savedData) {
+            const allAnswers = JSON.parse(savedData);
+            
+            // 恢复答案数据
+            if (allAnswers.bwmAnswers) {
+                bwmAnswers = allAnswers.bwmAnswers;
+                console.log('已恢复BWM答案:', bwmAnswers);
+            }
+            
+            if (allAnswers.dimensionAnswers) {
+                dimensionAnswers = allAnswers.dimensionAnswers;
+                console.log('已恢复构面答案:', dimensionAnswers);
+            }
+            
+            if (allAnswers.factorAnswers) {
+                factorAnswers = allAnswers.factorAnswers;
+                console.log('已恢复因素答案:', factorAnswers);
+            }
+            
+            // 恢复当前状态
+            if (allAnswers.currentStep !== undefined) {
+                currentStep = allAnswers.currentStep;
+            }
+            if (allAnswers.currentBWMQuestion !== undefined) {
+                currentBWMQuestion = allAnswers.currentBWMQuestion;
+            }
+            if (allAnswers.currentDimensionQuestion !== undefined) {
+                currentDimensionQuestion = allAnswers.currentDimensionQuestion;
+            }
+            if (allAnswers.currentFactorQuestion !== undefined) {
+                currentFactorQuestion = allAnswers.currentFactorQuestion;
+            }
+            
+            console.log('所有答案已从localStorage恢复');
+            return true;
+        }
+    } catch (error) {
+        console.error('恢复答案失败:', error);
+    }
+    return false;
+}
+
+// 清除所有保存的答案
+function clearAllAnswers() {
+    if (confirm('確定要清除所有保存的答案嗎？此操作無法撤銷。')) {
+        try {
+            localStorage.removeItem(STORAGE_KEY);
+            console.log('所有保存的答案已清除');
+            alert('答案已清除，頁面將重新載入。');
+            location.reload();
+        } catch (error) {
+            console.error('清除答案失败:', error);
+            alert('清除答案時發生錯誤，請重試。');
+        }
+    }
+}
+
+// 检查是否有保存的答案
+function hasSavedAnswers() {
+    try {
+        const savedData = localStorage.getItem(STORAGE_KEY);
+        return savedData !== null;
+    } catch (error) {
+        console.error('检查保存答案失败:', error);
+        return false;
+    }
+}
+
+// 自动保存答案的包装函数
+function autoSaveAnswers() {
+    saveAllAnswers();
+    
+    // 更新題目導航狀態
+    updateAllQuestionNavigation();
+}
+
+// 页面加载时恢复答案
+document.addEventListener('DOMContentLoaded', function() {
+    if (hasSavedAnswers()) {
+        const restored = restoreAllAnswers();
+        if (restored) {
+            // 显示恢复提示
+            showRestoreNotification();
+        }
+    }
+    
+    // 更新清除按钮状态
+    updateClearButton();
+});
+
+// 显示恢复提示
+function showRestoreNotification() {
+    const notification = document.createElement('div');
+    notification.className = 'alert alert-info alert-dismissible fade show position-fixed';
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 400px;';
+    notification.innerHTML = `
+        <strong>答案已恢复！</strong> 检测到您之前填写的答案，已自动恢复。
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(notification);
+    
+    // 5秒后自动隐藏
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+// 控制清除按钮的显示
+function updateClearButton() {
+    const clearBtn = document.getElementById('clear-answers-btn');
+    if (clearBtn) {
+        if (hasSavedAnswers()) {
+            clearBtn.style.display = 'inline-block';
+        } else {
+            clearBtn.style.display = 'none';
+        }
+    }
+}
+
+// 更新所有題目導航狀態
+function updateAllQuestionNavigation() {
+    // 更新BWM題目導航
+    updateBWMQuestionNavigation();
+    
+    // 更新構面題目導航
+    updateDimensionQuestionNavigation();
+    
+    // 更新因素題目導航
+    updateFactorQuestionNavigation();
+}
+
+// 更新BWM題目導航狀態
+function updateBWMQuestionNavigation() {
+    const questionList = document.getElementById('bwm-question-list');
+    if (questionList) {
+        questionList.innerHTML = generateBWMQuestionList();
+    }
+}
+
+// 更新構面題目導航狀態
+function updateDimensionQuestionNavigation() {
+    const questionList = document.getElementById('dimension-question-list');
+    if (questionList) {
+        questionList.innerHTML = generateDimensionQuestionList();
+    }
+}
+
+// 更新因素題目導航狀態
+function updateFactorQuestionNavigation() {
+    const questionList = document.getElementById('factor-question-list');
+    if (questionList) {
+        questionList.innerHTML = generateFactorQuestionList();
+    }
+}

@@ -197,40 +197,138 @@
             border-color: #007bff; 
         }
         
+        /* 基本資料按鈕式選擇樣式 */
+        .btn-group-vertical .btn {
+            margin-bottom: 5px;
+            border-radius: 8px !important;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .btn-group-vertical .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .btn-check:checked + .btn {
+            background-color: #007bff;
+            border-color: #007bff;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .btn-check:checked + .btn:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        
         /* 關係選擇樣式 */
-        .dematel-relation { 
-            display: flex; 
-            gap: 10px; 
-            justify-content: center; 
+        .dematel-relation {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 15px 0;
         }
-        .relation-option { 
-            text-align: center; 
+        
+        .relation-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
-        .relation-option input[type="radio"] { 
-            display: none; 
-        }
-        .relation-option label {
-            display: inline-block; 
-            width: 50px; 
-            height: 50px; 
-            line-height: 50px; 
-            text-align: center;
-            border: 2px solid #dee2e6; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            font-size: 20px;
-            font-weight: bold; 
-            transition: all 0.3s ease; 
+        
+        .relation-option:hover {
+            border-color: #007bff;
             background-color: #f8f9fa;
         }
-        .relation-option input[type="radio"]:checked + label { 
-            background-color: #007bff; 
-            border-color: #007bff; 
-            color: white; 
+        
+        .relation-option input[type="radio"]:checked + label {
+            color: #007bff;
+            font-weight: bold;
         }
-        .relation-option label:hover { 
-            border-color: #007bff; 
-            background-color: #e3f2fd; 
+        
+        .relation-option input[type="radio"]:checked {
+            accent-color: #007bff;
+        }
+        
+        /* 題目導航樣式 */
+        .question-navigation {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .question-list {
+            margin-top: 10px;
+        }
+        
+        .question-list .btn {
+            font-size: 12px;
+            padding: 6px 10px;
+            margin: 2px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+        
+        .question-list .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .question-list .btn.btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+        
+        .question-list .btn.btn-outline-secondary {
+            border-color: #6c757d;
+            color: #6c757d;
+        }
+        
+        .question-list .btn.border-primary {
+            border-width: 2px;
+            border-color: #007bff !important;
+        }
+        
+        /* 影響程度選擇樣式 */
+        .impact-level {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .impact-options {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 10px 0;
+        }
+        
+        .impact-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .impact-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .impact-btn.btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
         }
         
         /* 問題進度樣式 */
@@ -290,9 +388,9 @@
 
         /* 按鈕脈衝效果 */
         .btn-pulse {
-            animation: pulse 1.5s infinite;
+            animation: pulse 2s infinite;
         }
-
+        
         @keyframes pulse {
             0% {
                 box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
@@ -349,47 +447,80 @@
                     
                     <div class="row">
                         <div class="col-md-6">
-                            <label class="form-label">姓名</label>
-                            <input type="text" class="form-control" name="name" placeholder="請輸入您的姓名" required>
+                            <label class="form-label">年齡</label>
+                            <div class="btn-group-vertical w-100" role="group">
+                                <input type="radio" class="btn-check" name="age" id="age_25_30" value="25~30歲" required>
+                                <label class="btn btn-outline-primary" for="age_25_30">25~30歲</label>
+                                
+                                <input type="radio" class="btn-check" name="age" id="age_31_35" value="31~35歲" required>
+                                <label class="btn btn-outline-primary" for="age_31_35">31~35歲</label>
+                                
+                                <input type="radio" class="btn-check" name="age" id="age_36_40" value="36~40歲" required>
+                                <label class="btn btn-outline-primary" for="age_36_40">36~40歲</label>
+                                
+                                <input type="radio" class="btn-check" name="age" id="age_41_45" value="41~45歲" required>
+                                <label class="btn btn-outline-primary" for="age_41_45">41~45歲</label>
+                                
+                                <input type="radio" class="btn-check" name="age" id="age_46_plus" value="46歲及以上" required>
+                                <label class="btn btn-outline-primary" for="age_46_plus">46歲及以上</label>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label">年齡 (歲)</label>
-                            <input type="number" class="form-control" name="age" placeholder="請輸入您的年齡" min="18" max="100" required>
-                        </div>
-                    </div>
-
-                    <div class="row mt-3">
                         <div class="col-md-6">
                             <label class="form-label">教育程度</label>
-                            <input type="text" class="form-control" name="education" placeholder="請輸入您的教育程度" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">數位轉型相關年資 (年)</label>
-                            <input type="number" class="form-control" name="experience" placeholder="請輸入您的年資" min="0" max="50" required>
+                            <div class="btn-group-vertical w-100" role="group">
+                                <input type="radio" class="btn-check" name="education" id="education_college" value="專科" required>
+                                <label class="btn btn-outline-primary" for="education_college">專科</label>
+                                
+                                <input type="radio" class="btn-check" name="education" id="education_university" value="大學" required>
+                                <label class="btn btn-outline-primary" for="education_university">大學</label>
+                                
+                                <input type="radio" class="btn-check" name="education" id="education_master" value="碩士" required>
+                                <label class="btn btn-outline-primary" for="education_master">碩士</label>
+                                
+                                <input type="radio" class="btn-check" name="education" id="education_phd" value="博士" required>
+                                <label class="btn btn-outline-primary" for="education_phd">博士</label>
+                            </div>
                         </div>
                     </div>
 
                     <div class="row mt-3">
                         <div class="col-md-6">
-                            <label class="form-label">是否為電子製造業</label>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="electronics_industry" value="yes" required>
-                                <label class="form-check-label">是</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="electronics_industry" value="no" required>
-                                <label class="form-check-label">否</label>
+                            <label class="form-label">數位轉型年資</label>
+                            <div class="btn-group-vertical w-100" role="group">
+                                <input type="radio" class="btn-check" name="experience" id="experience_5" value="5年" required>
+                                <label class="btn btn-outline-primary" for="experience_5">5年</label>
+                                
+                                <input type="radio" class="btn-check" name="experience" id="experience_6_10" value="6~10年" required>
+                                <label class="btn btn-outline-primary" for="experience_6_10">6~10年</label>
+                                
+                                <input type="radio" class="btn-check" name="experience" id="experience_11_20" value="11~20年" required>
+                                <label class="btn btn-outline-primary" for="experience_11_20">11~20年</label>
+                                
+                                <input type="radio" class="btn-check" name="experience" id="experience_21_plus" value="21年及以上" required>
+                                <label class="btn btn-outline-primary" for="experience_21_plus">21年及以上</label>
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">性別</label>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="gender" value="male" required>
-                                <label class="form-check-label">男</label>
+                            <label class="form-label">是否為電子製造業</label>
+                            <div class="btn-group-vertical w-100" role="group">
+                                <input type="radio" class="btn-check" name="electronics_industry" id="electronics_yes" value="yes" required>
+                                <label class="btn btn-outline-primary" for="electronics_yes">是</label>
+                                
+                                <input type="radio" class="btn-check" name="electronics_industry" id="electronics_no" value="no" required>
+                                <label class="btn btn-outline-primary" for="electronics_no">否</label>
                             </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="gender" value="female" required>
-                                <label class="form-check-label">女</label>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <label class="form-label">性別</label>
+                            <div class="btn-group-vertical w-100" role="group">
+                                <input type="radio" class="btn-check" name="gender" id="gender_male" value="male" required>
+                                <label class="btn btn-outline-primary" for="gender_male">男</label>
+                                
+                                <input type="radio" class="btn-check" name="gender" id="gender_female" value="female" required>
+                                <label class="btn btn-outline-primary" for="gender_female">女</label>
                             </div>
                         </div>
                     </div>
@@ -475,6 +606,7 @@
                     <div class="text-center mt-4">
                         <button type="button" class="btn btn-secondary" onclick="prevStep()">上一步</button>
                         <button type="button" class="btn btn-primary" onclick="nextStep()">下一步</button>
+                        <button type="button" class="btn btn-outline-danger ms-2" onclick="clearAllAnswers()" id="clear-answers-btn" style="display: none;">清除保存的答案</button>
                     </div>
                 </div>
             </div>
