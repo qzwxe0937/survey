@@ -164,6 +164,57 @@
             margin: 2px;
             border-radius: 4px;
             transition: all 0.2s ease;
+            min-width: 40px;
+            white-space: nowrap;
+        }
+        
+        /* 手机设备优化 */
+        @media (max-width: 768px) {
+            .rating-btn {
+                font-size: 10px;
+                padding: 2px 4px;
+                margin: 1px;
+                min-width: 32px;
+            }
+            
+            /* 确保表格在小屏幕上正确显示 */
+            .table-responsive .table td {
+                padding: 4px 2px;
+                font-size: 12px;
+            }
+            
+            .table-responsive .table th {
+                padding: 6px 2px;
+                font-size: 12px;
+            }
+            
+            /* 优化BWM评分表格在手机上的显示 */
+            .table-sm td, .table-sm th {
+                padding: 4px 2px;
+                font-size: 11px;
+            }
+            
+            /* 确保按钮不会超出单元格 */
+            .table-sm .rating-btn {
+                font-size: 9px;
+                padding: 1px 3px;
+                min-width: 28px;
+                margin: 0;
+            }
+        }
+        
+        /* 超小屏幕优化 */
+        @media (max-width: 480px) {
+            .rating-btn {
+                font-size: 9px;
+                padding: 1px 2px;
+                min-width: 24px;
+            }
+            
+            .table-sm td, .table-sm th {
+                padding: 2px 1px;
+                font-size: 10px;
+            }
         }
 
         .rating-btn:hover {

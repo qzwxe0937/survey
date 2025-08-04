@@ -928,15 +928,15 @@ function generateBestFactorComparison(container, question) {
     
     // 創建橫式評分表
     const ratingTable = document.createElement('table');
-    ratingTable.className = 'table table-bordered';
+    ratingTable.className = 'table table-bordered table-sm';
     
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
     
     // 創建表頭：第一列為標題，其餘為評分選項
-    let headerHtml = '<th style="width: 20%;">評分選項</th>';
+    let headerHtml = '<th style="width: 25%;">評分選項</th>';
     ratingOptions.forEach(option => {
-        headerHtml += `<th style="width: ${80/ratingOptions.length}%; text-align: center;">${option.text}</th>`;
+        headerHtml += `<th style="width: ${75/ratingOptions.length}%; text-align: center;">${option.text}</th>`;
     });
     headerRow.innerHTML = headerHtml;
     thead.appendChild(headerRow);
@@ -1123,15 +1123,15 @@ function generateWorstFactorComparison(container, question) {
     
     // 創建橫式評分表
     const ratingTable = document.createElement('table');
-    ratingTable.className = 'table table-bordered';
+    ratingTable.className = 'table table-bordered table-sm';
     
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
     
     // 創建表頭：第一列為標題，其餘為評分選項
-    let headerHtml = '<th style="width: 20%;">評分選項</th>';
+    let headerHtml = '<th style="width: 25%;">評分選項</th>';
     ratingOptions.forEach(option => {
-        headerHtml += `<th style="width: ${80/ratingOptions.length}%; text-align: center;">${option.text}</th>`;
+        headerHtml += `<th style="width: ${75/ratingOptions.length}%; text-align: center;">${option.text}</th>`;
     });
     headerRow.innerHTML = headerHtml;
     thead.appendChild(headerRow);
