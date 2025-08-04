@@ -317,22 +317,22 @@ function generateBWMSelections() {
     // 生成BWM問題列表
     bwmQuestions = [];
     
-    // 問題1：選擇最佳因素
+    // 問題1：選擇最重要因素
     bwmQuestions.push({
         type: 'best_selection',
-        title: '請選出最佳因素',
-        description: '請從以下因素中選出您認為最重要的最佳因素。',
+        title: '請選出最重要因素',
+        description: '請從以下因素中選出您認為最重要的因素。',
         question: '哪一個因素對數位轉型最重要？'
     });
     
-    // 問題2-8：最佳因素與其他因素的比較
+    // 問題2-8：最重要因素與其他因素的比較
     const factorKeys = Object.keys(factors);
     factorKeys.forEach((factorKey, index) => {
         bwmQuestions.push({
             type: 'best_comparison',
-            title: `最佳因素比較 (${index + 1}/${factorKeys.length})`,
-            description: '請比較最佳因素與其他因素的重要性。',
-            question: `比較「最佳因素」與「${factorKey}. ${factors[factorKey].name}」的重要性`,
+            title: `最重要因素比較 (${index + 1}/${factorKeys.length})`,
+            description: '請比較最重要因素與其他因素的重要性。',
+            question: `比較「最重要因素」與「${factorKey}. ${factors[factorKey].name}」的重要性`,
             factorKey: factorKey,
             factorName: factors[factorKey].name,
             factorDescription: factors[factorKey].description,
@@ -340,21 +340,21 @@ function generateBWMSelections() {
         });
     });
     
-    // 問題9：選擇最劣因素
+    // 問題9：選擇最不重要因素
     bwmQuestions.push({
         type: 'worst_selection',
-        title: '請選出最劣因素',
-        description: '請從以下因素中選出您認為最不重要的最劣因素。',
+        title: '請選出最不重要因素',
+        description: '請從以下因素中選出您認為最不重要的因素。',
         question: '哪一個因素對數位轉型最不重要？'
     });
     
-    // 問題10-16：其他因素與最劣因素的比較
+    // 問題10-16：其他因素與最不重要因素的比較（排除最重要因素）
     factorKeys.forEach((factorKey, index) => {
         bwmQuestions.push({
             type: 'worst_comparison',
-            title: `最劣因素比較 (${index + 1}/${factorKeys.length})`,
-            description: '請比較其他因素與最劣因素的重要性。',
-            question: `比較「${factorKey}. ${factors[factorKey].name}」與「最劣因素」的重要性`,
+            title: `最不重要因素比較 (${index + 1}/${factorKeys.length})`,
+            description: '請比較其他因素與最不重要因素的重要性。',
+            question: `比較「${factorKey}. ${factors[factorKey].name}」與「最不重要因素」的重要性`,
             factorKey: factorKey,
             factorName: factors[factorKey].name,
             factorDescription: factors[factorKey].description,
@@ -564,7 +564,7 @@ function updateBWMButtons() {
     }
 }
 
-// 生成最佳因素選擇
+// 生成最重要因素選擇
 function generateBestFactorSelection(container) {
     const optionsDiv = document.createElement('div');
     optionsDiv.className = 'factor-options';
@@ -609,7 +609,7 @@ function generateBestFactorSelection(container) {
     container.appendChild(optionsDiv);
 }
 
-// 生成最劣因素選擇
+// 生成最不重要因素選擇
 function generateWorstFactorSelection(container) {
     const optionsDiv = document.createElement('div');
     optionsDiv.className = 'factor-options';
@@ -654,11 +654,11 @@ function generateWorstFactorSelection(container) {
     container.appendChild(optionsDiv);
 }
 
-// 選擇最佳因素
+// 選擇最重要因素
 function selectBestFactor(factorKey, element) {
-    // 如果重新選擇最佳因素，清除所有相關的比較答案
+    // 如果重新選擇最重要因素，清除所有相關的比較答案
     if (bestFactor && bestFactor !== factorKey) {
-        console.log(`重新選擇最佳因素: ${bestFactor} -> ${factorKey}, 清除相關比較答案`);
+        console.log(`重新選擇最重要因素: ${bestFactor} -> ${factorKey}, 清除相關比較答案`);
         
         // 清除所有以 "best_" 開頭的比較答案
         Object.keys(bwmAnswers).forEach(key => {
@@ -697,7 +697,7 @@ function selectBestFactor(factorKey, element) {
     
     // 檢查是否是最後一題
     const isLastQuestion = currentBWMQuestion >= bwmQuestions.length - 1;
-    console.log(`選擇最佳因素: ${factorKey}, 是否最後一題: ${isLastQuestion}`);
+    console.log(`選擇最重要因素: ${factorKey}, 是否最後一題: ${isLastQuestion}`);
     
     // 自動跳轉到下一題
     setTimeout(() => {
@@ -710,11 +710,11 @@ function selectBestFactor(factorKey, element) {
     }, 500);
 }
 
-// 選擇最劣因素
+// 選擇最不重要因素
 function selectWorstFactor(factorKey, element) {
-    // 如果重新選擇最劣因素，清除所有相關的比較答案
+    // 如果重新選擇最不重要因素，清除所有相關的比較答案
     if (worstFactor && worstFactor !== factorKey) {
-        console.log(`重新選擇最劣因素: ${worstFactor} -> ${factorKey}, 清除相關比較答案`);
+        console.log(`重新選擇最不重要因素: ${worstFactor} -> ${factorKey}, 清除相關比較答案`);
         
         // 清除所有以 "worst_" 開頭的比較答案
         Object.keys(bwmAnswers).forEach(key => {
@@ -752,7 +752,7 @@ function selectWorstFactor(factorKey, element) {
     
     // 檢查是否是最後一題
     const isLastQuestion = currentBWMQuestion >= bwmQuestions.length - 1;
-    console.log(`選擇最劣因素: ${factorKey}, 是否最後一題: ${isLastQuestion}`);
+    console.log(`選擇最不重要因素: ${factorKey}, 是否最後一題: ${isLastQuestion}`);
     
     // 自動跳轉到下一題
     setTimeout(() => {
@@ -839,16 +839,16 @@ function selectRating(button, name, value) {
     validateStep3();
 }
 
-// 生成最佳因素比較表格
+// 生成最重要因素比較表格
 function generateBestFactorComparison(container, question) {
-    // 从保存的答案中获取最佳因素
+    // 从保存的答案中获取最重要因素
     const savedBestFactor = bwmAnswers.best_factor;
     if (!savedBestFactor) {
-        container.innerHTML = '<div class="alert alert-warning">請先選擇最佳因素</div>';
+        container.innerHTML = '<div class="alert alert-warning">請先選擇最重要因素</div>';
         return;
     }
     
-    // 如果比較的是最佳因素自己，自動填入1並跳過
+    // 如果比較的是最重要因素自己，自動填入1並跳過
     if (question.factorKey === savedBestFactor) {
         // 自動填入1
         bwmAnswers[`best_${savedBestFactor}_${savedBestFactor}`] = 1;
@@ -860,7 +860,7 @@ function generateBestFactorComparison(container, question) {
         return;
     }
     
-    // 添加最佳因素說明
+    // 添加最重要因素說明
     const bestFactorInfo = document.createElement('div');
     bestFactorInfo.className = 'alert alert-info mb-3';
     
@@ -879,9 +879,12 @@ function generateBestFactorComparison(container, question) {
     }
     
     bestFactorInfo.innerHTML = `
-        <h6><strong>最佳因素：${savedBestFactor}. ${factors[savedBestFactor].name}</strong></h6>
+        <h6><strong>最重要因素：${savedBestFactor}. ${factors[savedBestFactor].name}</strong></h6>
         <p class="mb-0"><small>${factors[savedBestFactor].description}</small></p>
         ${bestExamplesHtml}
+        <div class="mt-2">
+            <small class="text-warning"><strong>注意：</strong>最重要與最不重要的因素評分為：9 (絕對差異)</small>
+        </div>
     `;
     container.appendChild(bestFactorInfo);
     
@@ -967,16 +970,16 @@ function generateBestFactorComparison(container, question) {
     ratingDiv.appendChild(ratingTable);
     container.appendChild(ratingDiv);
     
-    // 添加評分標準表格說明
+    // 添加評估差異尺度表格說明
     const ratingStandardDiv = document.createElement('div');
     ratingStandardDiv.className = 'mt-4';
     ratingStandardDiv.innerHTML = `
-        <h6 class="text-primary mb-3">評分標準說明：</h6>
+        <h6 class="text-primary mb-3">評估差異尺度說明：</h6>
         <div class="table-responsive">
             <table class="table table-sm table-bordered">
                 <thead class="table-light">
                     <tr>
-                        <th style="width: 10%;">評分</th>
+                        <th style="width: 10%;">評估差異尺度</th>
                         <th style="width: 20%;">定義</th>
                         <th style="width: 70%;">說明</th>
                     </tr>
@@ -984,47 +987,47 @@ function generateBestFactorComparison(container, question) {
                 <tbody>
                     <tr>
                         <td class="text-center"><strong>1</strong></td>
-                        <td>同等重要</td>
+                        <td>沒有差異(No difference)</td>
                         <td>兩比較方案具同等重要性</td>
                     </tr>
                     <tr>
                         <td class="text-center"><strong>2</strong></td>
-                        <td>尺度1與尺度3之間</td>
-                        <td>-</td>
+                        <td>相鄰尺度之中間值</td>
+                        <td>折衷值</td>
                     </tr>
                     <tr>
                         <td class="text-center"><strong>3</strong></td>
-                        <td>稍微重要</td>
+                        <td>稍微差異(Weak difference)</td>
                         <td>經驗與判斷稍微傾向偏好某一方案</td>
                     </tr>
                     <tr>
                         <td class="text-center"><strong>4</strong></td>
-                        <td>尺度3與尺度5之間</td>
-                        <td>-</td>
+                        <td>相鄰尺度之中間值</td>
+                        <td>折衷值</td>
                     </tr>
                     <tr>
                         <td class="text-center"><strong>5</strong></td>
-                        <td>非常重要</td>
+                        <td>非常差異(Essential difference)</td>
                         <td>經驗與判斷非常傾向偏好某一方案</td>
                     </tr>
                     <tr>
                         <td class="text-center"><strong>6</strong></td>
-                        <td>尺度5與尺度7之間</td>
-                        <td>-</td>
+                        <td>相鄰尺度之中間值</td>
+                        <td>折衷值</td>
                     </tr>
                     <tr>
                         <td class="text-center"><strong>7</strong></td>
-                        <td>極度重要</td>
+                        <td>極度差異(Very Strong difference)</td>
                         <td>實際顯示強烈傾向偏好某一方案</td>
                     </tr>
                     <tr>
                         <td class="text-center"><strong>8</strong></td>
-                        <td>尺度7與尺度9之間</td>
-                        <td>-</td>
+                        <td>相鄰尺度之中間值</td>
+                        <td>折衷值</td>
                     </tr>
                     <tr>
                         <td class="text-center"><strong>9</strong></td>
-                        <td>絕對重要</td>
+                        <td>絕對差異(Absolute difference)</td>
                         <td>充分證據絕對偏好某一方案</td>
                     </tr>
                 </tbody>
@@ -1034,20 +1037,33 @@ function generateBestFactorComparison(container, question) {
     container.appendChild(ratingStandardDiv);
 }
 
-// 生成最劣因素比較表格
+// 生成最不重要因素比較表格
 function generateWorstFactorComparison(container, question) {
-    // 从保存的答案中获取最劣因素
+    // 从保存的答案中获取最不重要因素
     const savedWorstFactor = bwmAnswers.worst_factor;
     if (!savedWorstFactor) {
-        container.innerHTML = '<div class="alert alert-warning">請先選擇最劣因素</div>';
+        container.innerHTML = '<div class="alert alert-warning">請先選擇最不重要因素</div>';
         return;
     }
     
-    // 如果比較的是最劣因素自己，自動填入1並跳過
+    // 如果比較的是最不重要因素自己，自動填入1並跳過
     if (question.factorKey === savedWorstFactor) {
         // 自動填入1
         bwmAnswers[`worst_${savedWorstFactor}_${savedWorstFactor}`] = 1;
         console.log(`自動填入自己比較: worst_${savedWorstFactor}_${savedWorstFactor} = 1`);
+        // 自動跳過這個問題
+        setTimeout(() => {
+            nextBWMQuestion();
+        }, 100);
+        return;
+    }
+    
+    // 如果比較的是最重要因素，自動填入9並跳過
+    const savedBestFactor = bwmAnswers.best_factor;
+    if (question.factorKey === savedBestFactor) {
+        // 自動填入9（最重要與最不重要的因素評分為9）
+        bwmAnswers[`worst_${savedWorstFactor}_${savedBestFactor}`] = 9;
+        console.log(`自動填入最重要因素比較: worst_${savedWorstFactor}_${savedBestFactor} = 9`);
         // 自動跳過這個問題
         setTimeout(() => {
             nextBWMQuestion();
@@ -1080,7 +1096,7 @@ function generateWorstFactorComparison(container, question) {
     `;
     container.appendChild(compareFactorInfo);
     
-    // 添加最劣因素說明
+    // 添加最不重要因素說明
     const worstFactorInfo = document.createElement('div');
     worstFactorInfo.className = 'alert alert-warning mb-3';
     
@@ -1099,9 +1115,12 @@ function generateWorstFactorComparison(container, question) {
     }
     
     worstFactorInfo.innerHTML = `
-        <h6><strong>最劣因素：${savedWorstFactor}. ${factors[savedWorstFactor].name}</strong></h6>
+        <h6><strong>最不重要因素：${savedWorstFactor}. ${factors[savedWorstFactor].name}</strong></h6>
         <p class="mb-0"><small>${factors[savedWorstFactor].description}</small></p>
         ${worstExamplesHtml}
+        <div class="mt-2">
+            <small class="text-info"><strong>注意：</strong>最不重要因素不需要與最重要因素比較，系統會自動設置為9</small>
+        </div>
     `;
     container.appendChild(worstFactorInfo);
     
@@ -1162,16 +1181,16 @@ function generateWorstFactorComparison(container, question) {
     ratingDiv.appendChild(ratingTable);
     container.appendChild(ratingDiv);
     
-    // 添加評分標準表格說明
+    // 添加評估差異尺度表格說明
     const ratingStandardDiv = document.createElement('div');
     ratingStandardDiv.className = 'mt-4';
     ratingStandardDiv.innerHTML = `
-        <h6 class="text-primary mb-3">評分標準說明：</h6>
+        <h6 class="text-primary mb-3">評估差異尺度說明：</h6>
         <div class="table-responsive">
             <table class="table table-sm table-bordered">
                 <thead class="table-light">
                     <tr>
-                        <th style="width: 10%;">評分</th>
+                        <th style="width: 10%;">評估差異尺度</th>
                         <th style="width: 20%;">定義</th>
                         <th style="width: 70%;">說明</th>
                     </tr>
@@ -1179,47 +1198,47 @@ function generateWorstFactorComparison(container, question) {
                 <tbody>
                     <tr>
                         <td class="text-center"><strong>1</strong></td>
-                        <td>同等重要</td>
+                        <td>沒有差異(No difference)</td>
                         <td>兩比較方案具同等重要性</td>
                     </tr>
                     <tr>
                         <td class="text-center"><strong>2</strong></td>
-                        <td>尺度1與尺度3之間</td>
-                        <td>-</td>
+                        <td>相鄰尺度之中間值</td>
+                        <td>折衷值</td>
                     </tr>
                     <tr>
                         <td class="text-center"><strong>3</strong></td>
-                        <td>稍微重要</td>
+                        <td>稍微差異(Weak difference)</td>
                         <td>經驗與判斷稍微傾向偏好某一方案</td>
                     </tr>
                     <tr>
                         <td class="text-center"><strong>4</strong></td>
-                        <td>尺度3與尺度5之間</td>
-                        <td>-</td>
+                        <td>相鄰尺度之中間值</td>
+                        <td>折衷值</td>
                     </tr>
                     <tr>
                         <td class="text-center"><strong>5</strong></td>
-                        <td>非常重要</td>
+                        <td>非常差異(Essential difference)</td>
                         <td>經驗與判斷非常傾向偏好某一方案</td>
                     </tr>
                     <tr>
                         <td class="text-center"><strong>6</strong></td>
-                        <td>尺度5與尺度7之間</td>
-                        <td>-</td>
+                        <td>相鄰尺度之中間值</td>
+                        <td>折衷值</td>
                     </tr>
                     <tr>
                         <td class="text-center"><strong>7</strong></td>
-                        <td>極度重要</td>
+                        <td>極度差異(Very Strong difference)</td>
                         <td>實際顯示強烈傾向偏好某一方案</td>
                     </tr>
                     <tr>
                         <td class="text-center"><strong>8</strong></td>
-                        <td>尺度7與尺度9之間</td>
-                        <td>-</td>
+                        <td>相鄰尺度之中間值</td>
+                        <td>折衷值</td>
                     </tr>
                     <tr>
                         <td class="text-center"><strong>9</strong></td>
-                        <td>絕對重要</td>
+                        <td>絕對差異(Absolute difference)</td>
                         <td>充分證據絕對偏好某一方案</td>
                     </tr>
                 </tbody>
@@ -1244,11 +1263,11 @@ function validateStep3() {
     // 檢查是否所有問題都已回答
     const allAnswered = answeredCount >= requiredAnswers;
     
-    // 檢查是否選擇了最佳和最劣因素
+    // 檢查是否選擇了最重要和最不重要因素
     const hasBestFactor = bwmAnswers.hasOwnProperty('best_factor');
     const hasWorstFactor = bwmAnswers.hasOwnProperty('worst_factor');
     
-    console.log(`最佳因素: ${bwmAnswers.best_factor || '未選擇'}, 最劣因素: ${bwmAnswers.worst_factor || '未選擇'}`);
+    console.log(`最重要因素: ${bwmAnswers.best_factor || '未選擇'}, 最不重要因素: ${bwmAnswers.worst_factor || '未選擇'}`);
     
     // 檢查比較問題是否完整
     const factorKeys = Object.keys(factors);
@@ -1256,11 +1275,11 @@ function validateStep3() {
     const worstFactor = bwmAnswers.worst_factor;
     
     // 計算預期的比較數量（排除自己與自己的比較）
-    const expectedBestComparisons = factorKeys.length - 1; // 最佳因素與其他因素的比較（排除自己）
-    const expectedWorstComparisons = factorKeys.length - 1; // 其他因素與最劣因素的比較（排除自己）
+    const expectedBestComparisons = factorKeys.length - 1; // 最重要因素與其他因素的比較（排除自己）
+    const expectedWorstComparisons = factorKeys.length - 2; // 其他因素與最不重要因素的比較（排除自己和最重要因素）
     
-    console.log(`因素總數: ${factorKeys.length}, 最佳因素: ${bestFactor}, 最劣因素: ${worstFactor}`);
-    console.log(`預期最佳比較: ${expectedBestComparisons}, 預期最劣比較: ${expectedWorstComparisons}`);
+    console.log(`因素總數: ${factorKeys.length}, 最重要因素: ${bestFactor}, 最不重要因素: ${worstFactor}`);
+    console.log(`預期最重要比較: ${expectedBestComparisons}, 預期最不重要比較: ${expectedWorstComparisons}`);
     
     let bestComparisonsCount = 0;
     let worstComparisonsCount = 0;
@@ -1273,7 +1292,7 @@ function validateStep3() {
                 console.log(`跳過自己比較: ${key}`);
             } else {
                 bestComparisonsCount++;
-                console.log(`最佳比較答案: ${key} = ${bwmAnswers[key]}`);
+                console.log(`最重要比較答案: ${key} = ${bwmAnswers[key]}`);
             }
         }
         if (key.startsWith('worst_') && key !== 'worst_factor') {
@@ -1283,12 +1302,12 @@ function validateStep3() {
                 console.log(`跳過自己比較: ${key}`);
             } else {
                 worstComparisonsCount++;
-                console.log(`最劣比較答案: ${key} = ${bwmAnswers[key]}`);
+                console.log(`最不重要比較答案: ${key} = ${bwmAnswers[key]}`);
             }
         }
     });
     
-    console.log(`實際最佳比較數: ${bestComparisonsCount}, 實際最劣比較數: ${worstComparisonsCount}`);
+    console.log(`實際最重要比較數: ${bestComparisonsCount}, 實際最不重要比較數: ${worstComparisonsCount}`);
     
     const allComparisonsComplete = bestComparisonsCount >= expectedBestComparisons && 
                                   worstComparisonsCount >= expectedWorstComparisons;
@@ -1312,7 +1331,7 @@ function validateStep3() {
         console.log('未找到step3-next按鈕');
     }
     
-    console.log(`BWM驗證結果: 最佳因素=${hasBestFactor}, 最劣因素=${hasWorstFactor}, 比較完整=${allComparisonsComplete}, 總體=${isValid}`);
+    console.log(`BWM驗證結果: 最重要因素=${hasBestFactor}, 最不重要因素=${hasWorstFactor}, 比較完整=${allComparisonsComplete}, 總體=${isValid}`);
     console.log('=== BWM驗證結束 ===');
 }
 
@@ -2624,8 +2643,8 @@ function displayResults(data) {
                 <div class="col-md-6">
                     <h4>BWM 結果</h4>
                     <ul class="list-group">
-                        <li class="list-group-item">最佳因素: ${data.bwm.bestFactor ? factors[data.bwm.bestFactor].name : '未選擇'}</li>
-                        <li class="list-group-item">最劣因素: ${data.bwm.worstFactor ? factors[data.bwm.worstFactor].name : '未選擇'}</li>
+                        <li class="list-group-item">最重要因素: ${data.bwm.bestFactor ? factors[data.bwm.bestFactor].name : '未選擇'}</li>
+                        <li class="list-group-item">最不重要因素: ${data.bwm.worstFactor ? factors[data.bwm.worstFactor].name : '未選擇'}</li>
                         <li class="list-group-item">比較數量: ${Object.keys(data.bwm.bestComparisons).length + Object.keys(data.bwm.worstComparisons).length}</li>
                     </ul>
                 </div>
@@ -2719,8 +2738,8 @@ function formatEmailContent(data) {
     
     // BWM 結果
     content += `【BWM 結果】\n`;
-    content += `最佳因素：${data.bwm.bestFactor ? factors[data.bwm.bestFactor].name : '未選擇'}\n`;
-    content += `最劣因素：${data.bwm.worstFactor ? factors[data.bwm.worstFactor].name : '未選擇'}\n`;
+            content += `最重要因素：${data.bwm.bestFactor ? factors[data.bwm.bestFactor].name : '未選擇'}\n`;
+            content += `最不重要因素：${data.bwm.worstFactor ? factors[data.bwm.worstFactor].name : '未選擇'}\n`;
     content += `比較數量：${Object.keys(data.bwm.bestComparisons).length + Object.keys(data.bwm.worstComparisons).length}\n\n`;
     
     // DEMATEL 結果
@@ -2777,7 +2796,7 @@ function restoreBWMAnswers() {
     if (!question) return;
     
     if (question.type === 'best_selection') {
-        // 恢復最佳因素選擇
+        // 恢復最重要因素選擇
         const savedBestFactor = bwmAnswers.best_factor;
         if (savedBestFactor) {
             // 查找包含該因素代碼的選項
@@ -2799,7 +2818,7 @@ function restoreBWMAnswers() {
             });
         }
     } else if (question.type === 'worst_selection') {
-        // 恢復最劣因素選擇
+        // 恢復最不重要因素選擇
         const savedWorstFactor = bwmAnswers.worst_factor;
         if (savedWorstFactor) {
             // 查找包含該因素代碼的選項
@@ -2821,7 +2840,7 @@ function restoreBWMAnswers() {
             });
         }
     } else if (question.type === 'best_comparison') {
-        // 恢復最佳因素比較評分
+        // 恢復最重要因素比較評分
         const answerKey = `best_${bwmAnswers.best_factor}_${question.factorKey}`;
         const savedRating = bwmAnswers[answerKey];
         if (savedRating) {
@@ -2843,7 +2862,7 @@ function restoreBWMAnswers() {
             });
         }
     } else if (question.type === 'worst_comparison') {
-        // 恢復最劣因素比較評分
+        // 恢復最不重要因素比較評分
         const answerKey = `worst_${question.factorKey}_${bwmAnswers.worst_factor}`;
         const savedRating = bwmAnswers[answerKey];
         if (savedRating) {
