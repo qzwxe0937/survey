@@ -185,7 +185,6 @@ function startQuestionnaire() {
 
 // 初始化問卷
 document.addEventListener('DOMContentLoaded', function() {
-    generateFactorExplanations();
     generateDEMATELDimensionComparison();
     generateDEMATELFactorComparison();
     updateProgress();
