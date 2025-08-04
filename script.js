@@ -915,15 +915,15 @@ function generateBestFactorComparison(container, question) {
     ratingDiv.className = 'rating-options';
     
     const ratingOptions = [
-        {value: 1, text: '相等重要 (1)'},
-        {value: 2, text: '略為重要 (2)'},
-        {value: 3, text: '稍微重要 (3)'},
-        {value: 4, text: '中度重要 (4)'},
-        {value: 5, text: '明顯重要 (5)'},
-        {value: 6, text: '強烈重要 (6)'},
-        {value: 7, text: '非常重要 (7)'},
-        {value: 8, text: '極度重要 (8)'},
-        {value: 9, text: '絕對重要 (9)'}
+        {value: 1, text: '1'},
+        {value: 2, text: '2'},
+        {value: 3, text: '3'},
+        {value: 4, text: '4'},
+        {value: 5, text: '5'},
+        {value: 6, text: '6'},
+        {value: 7, text: '7'},
+        {value: 8, text: '8'},
+        {value: 9, text: '9'}
     ];
     
     // 創建橫式評分表
@@ -966,6 +966,72 @@ function generateBestFactorComparison(container, question) {
     ratingTable.appendChild(tbody);
     ratingDiv.appendChild(ratingTable);
     container.appendChild(ratingDiv);
+    
+    // 添加評分標準表格說明
+    const ratingStandardDiv = document.createElement('div');
+    ratingStandardDiv.className = 'mt-4';
+    ratingStandardDiv.innerHTML = `
+        <h6 class="text-primary mb-3">評分標準說明：</h6>
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 10%;">評分</th>
+                        <th style="width: 20%;">定義</th>
+                        <th style="width: 70%;">說明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="text-center"><strong>1</strong></td>
+                        <td>同等重要</td>
+                        <td>兩比較方案具同等重要性</td>
+                    </tr>
+                    <tr>
+                        <td class="text-center"><strong>2</strong></td>
+                        <td>尺度1與尺度3之間</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td class="text-center"><strong>3</strong></td>
+                        <td>稍微重要</td>
+                        <td>經驗與判斷稍微傾向偏好某一方案</td>
+                    </tr>
+                    <tr>
+                        <td class="text-center"><strong>4</strong></td>
+                        <td>尺度3與尺度5之間</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td class="text-center"><strong>5</strong></td>
+                        <td>非常重要</td>
+                        <td>經驗與判斷非常傾向偏好某一方案</td>
+                    </tr>
+                    <tr>
+                        <td class="text-center"><strong>6</strong></td>
+                        <td>尺度5與尺度7之間</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td class="text-center"><strong>7</strong></td>
+                        <td>極度重要</td>
+                        <td>實際顯示強烈傾向偏好某一方案</td>
+                    </tr>
+                    <tr>
+                        <td class="text-center"><strong>8</strong></td>
+                        <td>尺度7與尺度9之間</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td class="text-center"><strong>9</strong></td>
+                        <td>絕對重要</td>
+                        <td>充分證據絕對偏好某一方案</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    `;
+    container.appendChild(ratingStandardDiv);
 }
 
 // 生成最劣因素比較表格
@@ -1044,15 +1110,15 @@ function generateWorstFactorComparison(container, question) {
     ratingDiv.className = 'rating-options';
     
     const ratingOptions = [
-        {value: 1, text: '相等重要 (1)'},
-        {value: 2, text: '略為重要 (2)'},
-        {value: 3, text: '稍微重要 (3)'},
-        {value: 4, text: '中度重要 (4)'},
-        {value: 5, text: '明顯重要 (5)'},
-        {value: 6, text: '強烈重要 (6)'},
-        {value: 7, text: '非常重要 (7)'},
-        {value: 8, text: '極度重要 (8)'},
-        {value: 9, text: '絕對重要 (9)'}
+        {value: 1, text: '1'},
+        {value: 2, text: '2'},
+        {value: 3, text: '3'},
+        {value: 4, text: '4'},
+        {value: 5, text: '5'},
+        {value: 6, text: '6'},
+        {value: 7, text: '7'},
+        {value: 8, text: '8'},
+        {value: 9, text: '9'}
     ];
     
     // 創建橫式評分表
@@ -1095,6 +1161,72 @@ function generateWorstFactorComparison(container, question) {
     ratingTable.appendChild(tbody);
     ratingDiv.appendChild(ratingTable);
     container.appendChild(ratingDiv);
+    
+    // 添加評分標準表格說明
+    const ratingStandardDiv = document.createElement('div');
+    ratingStandardDiv.className = 'mt-4';
+    ratingStandardDiv.innerHTML = `
+        <h6 class="text-primary mb-3">評分標準說明：</h6>
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 10%;">評分</th>
+                        <th style="width: 20%;">定義</th>
+                        <th style="width: 70%;">說明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="text-center"><strong>1</strong></td>
+                        <td>同等重要</td>
+                        <td>兩比較方案具同等重要性</td>
+                    </tr>
+                    <tr>
+                        <td class="text-center"><strong>2</strong></td>
+                        <td>尺度1與尺度3之間</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td class="text-center"><strong>3</strong></td>
+                        <td>稍微重要</td>
+                        <td>經驗與判斷稍微傾向偏好某一方案</td>
+                    </tr>
+                    <tr>
+                        <td class="text-center"><strong>4</strong></td>
+                        <td>尺度3與尺度5之間</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td class="text-center"><strong>5</strong></td>
+                        <td>非常重要</td>
+                        <td>經驗與判斷非常傾向偏好某一方案</td>
+                    </tr>
+                    <tr>
+                        <td class="text-center"><strong>6</strong></td>
+                        <td>尺度5與尺度7之間</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td class="text-center"><strong>7</strong></td>
+                        <td>極度重要</td>
+                        <td>實際顯示強烈傾向偏好某一方案</td>
+                    </tr>
+                    <tr>
+                        <td class="text-center"><strong>8</strong></td>
+                        <td>尺度7與尺度9之間</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td class="text-center"><strong>9</strong></td>
+                        <td>絕對重要</td>
+                        <td>充分證據絕對偏好某一方案</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    `;
+    container.appendChild(ratingStandardDiv);
 }
 
 // 驗證步驟3
