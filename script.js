@@ -237,6 +237,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (form) {
         form.addEventListener('submit', handleFormSubmit);
         console.log('表單提交事件監聽器已綁定');
+        
+
     } else {
         console.error('找不到問卷表單元素');
     }
@@ -492,7 +494,8 @@ function isBWMQuestionAnswered(questionIndex) {
         if (!worstFactor) return false;
         
         // 檢查當前問題對應的比較是否已回答
-        const answerKey = `worst_${question.factorKey}_${worstFactor}`;
+        // 注意：worst_comparison 問題的答案鍵格式是 worst_${worstFactor}_${question.factorKey}
+        const answerKey = `worst_${worstFactor}_${question.factorKey}`;
         return bwmAnswers.hasOwnProperty(answerKey);
     }
     
@@ -853,6 +856,19 @@ function generateBestFactorComparison(container, question) {
         // 自動填入1
         bwmAnswers[`best_${savedBestFactor}_${savedBestFactor}`] = 1;
         console.log(`自動填入自己比較: best_${savedBestFactor}_${savedBestFactor} = 1`);
+        console.log('當前bwmAnswers狀態:', bwmAnswers);
+        
+        // 保存答案並更新導航狀態
+        console.log('調用autoSaveAnswers() - 最重要因素自己比較');
+        autoSaveAnswers();
+        console.log('autoSaveAnswers()調用完成');
+        
+        // 立即更新導航狀態
+        setTimeout(() => {
+            updateBWMQuestionNavigation();
+            console.log('導航狀態已更新');
+        }, 50);
+        
         // 自動跳過這個問題
         setTimeout(() => {
             nextBWMQuestion();
@@ -958,7 +974,7 @@ function generateBestFactorComparison(container, question) {
         buttonCell.innerHTML = `
             <button type="button" class="btn btn-outline-secondary btn-sm rating-btn" 
                     data-value="${option.value}" 
-                    onclick="selectBWMRating(this, 'best_${bestFactor}_${question.factorKey}', ${option.value})">
+                    onclick="selectBWMRating(this, 'best_${savedBestFactor}_${question.factorKey}', ${option.value})">
                 選擇
             </button>
         `;
@@ -1051,6 +1067,19 @@ function generateWorstFactorComparison(container, question) {
         // 自動填入1
         bwmAnswers[`worst_${savedWorstFactor}_${savedWorstFactor}`] = 1;
         console.log(`自動填入自己比較: worst_${savedWorstFactor}_${savedWorstFactor} = 1`);
+        console.log('當前bwmAnswers狀態:', bwmAnswers);
+        
+        // 保存答案並更新導航狀態
+        console.log('調用autoSaveAnswers() - 最不重要因素自己比較');
+        autoSaveAnswers();
+        console.log('autoSaveAnswers()調用完成');
+        
+        // 立即更新導航狀態
+        setTimeout(() => {
+            updateBWMQuestionNavigation();
+            console.log('導航狀態已更新');
+        }, 50);
+        
         // 自動跳過這個問題
         setTimeout(() => {
             nextBWMQuestion();
@@ -1064,6 +1093,19 @@ function generateWorstFactorComparison(container, question) {
         // 自動填入9（最重要與最不重要的因素評分為9）
         bwmAnswers[`worst_${savedWorstFactor}_${savedBestFactor}`] = 9;
         console.log(`自動填入最重要因素比較: worst_${savedWorstFactor}_${savedBestFactor} = 9`);
+        console.log('當前bwmAnswers狀態:', bwmAnswers);
+        
+        // 保存答案並更新導航狀態
+        console.log('調用autoSaveAnswers() - 最重要與最不重要因素比較');
+        autoSaveAnswers();
+        console.log('autoSaveAnswers()調用完成');
+        
+        // 立即更新導航狀態
+        setTimeout(() => {
+            updateBWMQuestionNavigation();
+            console.log('導航狀態已更新');
+        }, 50);
+        
         // 自動跳過這個問題
         setTimeout(() => {
             nextBWMQuestion();
@@ -1169,7 +1211,7 @@ function generateWorstFactorComparison(container, question) {
         buttonCell.innerHTML = `
             <button type="button" class="btn btn-outline-secondary btn-sm rating-btn" 
                     data-value="${option.value}" 
-                    onclick="selectBWMRating(this, 'worst_${question.factorKey}_${worstFactor}', ${option.value})">
+                    onclick="selectBWMRating(this, 'worst_${savedWorstFactor}_${question.factorKey}', ${option.value})">
                 選擇
             </button>
         `;
@@ -1817,24 +1859,41 @@ function isFactorQuestionAnswered(questionIndex) {
     
     // 首先檢查保存的答案
     const savedAnswers = factorAnswers[key];
-    if (!savedAnswers) return false;
+    if (!savedAnswers) {
+        console.log(`問題 ${questionIndex + 1} (${key}): 沒有保存的答案`);
+        return false;
+    }
     
-    // 檢查是否有選擇關係
+    // 檢查是否有選擇關係 - 使用正確的鍵名結構
     const relationValue = savedAnswers[`factor_relation_${xKey}_${yKey}`];
-    if (!relationValue) return false;
+    if (!relationValue) {
+        console.log(`問題 ${questionIndex + 1} (${key}): 沒有選擇關係`);
+        return false;
+    }
     
     // 如果選擇無關係，則已完成
-    if (relationValue === 'none') return true;
+    if (relationValue === 'none') {
+        console.log(`問題 ${questionIndex + 1} (${key}): 選擇無關係，已完成`);
+        return true;
+    }
     
     // 檢查影響程度是否已選擇
     if (relationValue === 'forward') {
-        return savedAnswers[`factor_forward_${xKey}_${yKey}`];
+        const hasForward = savedAnswers[`factor_forward_${xKey}_${yKey}`];
+        console.log(`問題 ${questionIndex + 1} (${key}): 正向影響 ${hasForward ? '已選擇' : '未選擇'}`);
+        return hasForward;
     } else if (relationValue === 'backward') {
-        return savedAnswers[`factor_backward_${xKey}_${yKey}`];
+        const hasBackward = savedAnswers[`factor_backward_${xKey}_${yKey}`];
+        console.log(`問題 ${questionIndex + 1} (${key}): 反向影響 ${hasBackward ? '已選擇' : '未選擇'}`);
+        return hasBackward;
     } else if (relationValue === 'both') {
-        return savedAnswers[`factor_forward_${xKey}_${yKey}`] && savedAnswers[`factor_backward_${xKey}_${yKey}`];
+        const hasForward = savedAnswers[`factor_forward_${xKey}_${yKey}`];
+        const hasBackward = savedAnswers[`factor_backward_${xKey}_${yKey}`];
+        console.log(`問題 ${questionIndex + 1} (${key}): 雙向影響 正向=${hasForward ? '已選擇' : '未選擇'}, 反向=${hasBackward ? '已選擇' : '未選擇'}`);
+        return hasForward && hasBackward;
     }
     
+    console.log(`問題 ${questionIndex + 1} (${key}): 未知關係類型 ${relationValue}`);
     return false;
 }
 
@@ -2051,18 +2110,41 @@ function validateStep4() {
 // 修正驗證步驟5 - 檢查當前問題是否完成
 function validateStep5() {
     console.log('=== 開始驗證步驟5 ===');
+    console.log('當前問題索引:', currentFactorQuestion);
+    console.log('總問題數量:', factorQuestions.length);
+    console.log('當前因素答案狀態:', factorAnswers);
     
     // 檢查所有問題是否已完成
     const allAnswered = factorQuestions.every((_, index) => isFactorQuestionAnswered(index));
+    console.log('所有問題完成狀態:', allAnswered);
     
     if (allAnswered) {
         // 所有問題已完成，顯示並啟用提交按鈕
+        console.log('所有問題已完成，啟用提交按鈕');
         const submitBtn = document.getElementById('step5-submit');
         if (submitBtn) {
             submitBtn.style.display = 'inline-block';
             submitBtn.disabled = false;
             submitBtn.classList.add('btn-success');
             submitBtn.classList.remove('btn-secondary');
+            console.log('提交按鈕已啟用');
+            console.log('提交按鈕狀態:', {
+                display: submitBtn.style.display,
+                disabled: submitBtn.disabled,
+                classes: submitBtn.className
+            });
+            
+            // 確保按鈕可以點擊
+            submitBtn.onclick = function(e) {
+                console.log('提交按鈕被點擊 - 直接觸發表單提交');
+                e.preventDefault();
+                const form = document.getElementById('questionnaireForm');
+                if (form) {
+                    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+                }
+            };
+        } else {
+            console.error('找不到step5-submit按鈕');
         }
         return;
     }
@@ -2524,7 +2606,9 @@ function validateStep1() {
 // 分離表單提交處理函數
 function handleFormSubmit(e) {
     e.preventDefault();
-    console.log('表單提交事件觸發');
+    console.log('=== 表單提交事件觸發 ===');
+    console.log('事件對象:', e);
+    console.log('目標元素:', e.target);
     
     try {
         // 收集基本資料
@@ -2537,6 +2621,12 @@ function handleFormSubmit(e) {
         };
         
         console.log('基本資料:', basicData);
+        
+        // 檢查基本資料是否完整
+        const missingBasicFields = Object.entries(basicData).filter(([key, value]) => !value);
+        if (missingBasicFields.length > 0) {
+            console.warn('缺少基本資料:', missingBasicFields.map(([key]) => key));
+        }
         
         // 收集BWM數據
         const bwmData = {
@@ -2557,6 +2647,7 @@ function handleFormSubmit(e) {
         });
         
         console.log('BWM數據:', bwmData);
+        console.log('原始bwmAnswers:', bwmAnswers);
         
         // 收集DEMATEL構面數據 - 使用保存的答案
         const dematelDimensionData = {};
@@ -2595,24 +2686,157 @@ function handleFormSubmit(e) {
         
         console.log('完整問卷數據:', surveyData);
         
-        // 顯示結果
+        // 顯示結果（包含上傳功能）
+        console.log('開始調用displayResults...');
         displayResults(surveyData);
-        
-        // 清除保存的答案
-        clearAllAnswers();
+        console.log('displayResults調用完成');
         
         // 滾動到頁面頂部
         window.scrollTo(0, 0);
         
+        // 根據用戶要求，送出問卷後不清除暫存內容
+        // 註解掉自動清除功能，保留用戶填寫的答案
+        // setTimeout(() => {
+        //     clearAllAnswers();
+        // }, 5000); // 5秒後清除，確保上傳有足夠時間
+        
+        console.log('=== 表單提交處理完成 ===');
+        
     } catch (error) {
         console.error('表單提交處理錯誤:', error);
+        console.error('錯誤堆疊:', error.stack);
         alert('提交問卷時發生錯誤，請檢查控制台獲取詳細信息。');
     }
 }
 
-// 改進顯示結果函數
+// 修改：上傳數據到Google App Script的功能
+async function uploadToGoogleSheet(data, surveyId = null) {
+    // Google App Script的URL - 請替換為您的實際URL
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwBGFs4gAD0hdSWN1-peMppKA8k7CyIA-ntScKSMEWqjVvo-YEH_it9MCafZqbL53Sa/exec';
+    
+    try {
+        // 如果沒有傳入surveyId，則生成一個
+        if (!surveyId) {
+            surveyId = 'SURVEY_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+        
+        // 顯示上傳中狀態
+        showUploadStatus('正在上傳數據到Google Sheet...', 'info');
+        
+        // 檢查數據完整性
+        if (!data || !data.basic || !data.bwm) {
+            throw new Error('數據不完整，無法上傳');
+        }
+        
+        // 準備上傳的payload，參照1.js的設計方式
+        const payload = {
+            surveyId: surveyId,
+            timestamp: new Date().toISOString(),
+            startTime: data.timestamp || new Date().toISOString(),
+            endTime: new Date().toISOString(),
+            totalQuestions: (data.bwm.bestComparisons ? Object.keys(data.bwm.bestComparisons).length : 0) + 
+                           (data.bwm.worstComparisons ? Object.keys(data.bwm.worstComparisons).length : 0) + 
+                           (data.dematelDimension ? Object.keys(data.dematelDimension).length : 0) + 
+                           (data.dematelFactor ? Object.keys(data.dematelFactor).length : 0),
+            // 基本資料扁平化
+            gender: data.basic.gender || '',
+            age: data.basic.age || '',
+            education: data.basic.education || '',
+            electronics_industry: data.basic.electronics_industry || '',
+            experience: data.basic.experience || '',
+            // 將完整的答案資料作為JSON字串存儲
+            answersData: JSON.stringify(data)
+        };
+
+        console.log('準備上傳的數據:', payload);
+
+        // 發送到 Google App Script，參照1.js的設計方式
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'text/plain;charset=utf-8' 
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const responseText = await response.text();
+        let responseData;
+        try {
+            responseData = JSON.parse(responseText);
+        } catch {
+            responseData = { ok: false, raw: responseText };
+        }
+
+        if (response.ok && responseData.ok) {
+            console.log('✅ 資料已成功上傳到 Google Sheet！問卷編號：' + surveyId);
+            // 顯示上傳成功信息
+            showUploadStatus(`✅ 數據已成功上傳到Google Sheet！問卷編號：${surveyId}`, 'success');
+        } else {
+            console.error('Server response:', responseData);
+            console.error('❌ 上傳失敗：' + (responseData.error || response.status + ' ' + responseText));
+            // 顯示上傳失敗信息
+            showUploadStatus(`⚠️ 上傳失敗：${responseData.error || response.status + ' ' + responseText}。您的數據已保存在本地，可以點擊下方按鈕下載。`, 'warning');
+        }
+
+    } catch (error) {
+        console.error('上傳錯誤:', error);
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            console.error('❌ 網路錯誤：無法連接到 Google Sheet 服務，請檢查網路連線後重試。');
+            showUploadStatus('❌ 網路錯誤：無法連接到 Google Sheet 服務，請檢查網路連線後重試。您的數據已保存在本地，可以點擊下方按鈕下載。', 'warning');
+        } else {
+            console.error('❌ 上傳失敗：' + error.message);
+            showUploadStatus(`❌ 上傳失敗：${error.message}。您的數據已保存在本地，可以點擊下方按鈕下載。`, 'warning');
+        }
+    }
+}
+
+// 新增：顯示上傳狀態信息（不會覆蓋結果頁面）
+function showUploadStatus(message, type = 'info') {
+    // 移除現有的上傳狀態信息
+    const existingStatus = document.querySelector('.upload-status-alert');
+    if (existingStatus) {
+        existingStatus.remove();
+    }
+    
+    // 創建新的狀態信息
+    const statusDiv = document.createElement('div');
+    statusDiv.className = `alert alert-${type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'info'} upload-status-alert mt-3`;
+    statusDiv.innerHTML = `
+        <h6>📤 數據上傳狀態</h6>
+        <p class="mb-0">${message}</p>
+    `;
+    
+    // 將狀態信息插入到結果頁面的頂部（在成功提示之後）
+    const container = document.querySelector('.container');
+    if (container) {
+        const successAlert = container.querySelector('.alert-success');
+        if (successAlert) {
+            // 插入到成功提示之後
+            successAlert.parentNode.insertBefore(statusDiv, successAlert.nextSibling);
+        } else {
+            // 如果沒有成功提示，插入到容器頂部
+            container.insertBefore(statusDiv, container.firstChild);
+        }
+    }
+    
+    // 如果是成功狀態，3秒後自動隱藏
+    if (type === 'success') {
+        setTimeout(() => {
+            if (statusDiv.parentNode) {
+                statusDiv.style.opacity = '0.7';
+                statusDiv.style.transition = 'opacity 0.5s ease';
+            }
+        }, 3000);
+    }
+}
+
+// 改進顯示結果函數 - 與Google App Script上傳功能協同工作
 function displayResults(data) {
     console.log('開始顯示結果');
+    console.log('接收到的數據:', data);
+    
+    // 將數據存儲到全局變數，供下載和寄送功能使用
+    window.currentSurveyData = data;
     
     const container = document.querySelector('.container');
     if (!container) {
@@ -2621,50 +2845,87 @@ function displayResults(data) {
     }
     
     try {
+        // 生成問卷ID（與上傳功能保持一致）
+        const surveyId = 'SURVEY_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        console.log('生成的問卷ID:', surveyId);
+        
+        // 檢查數據完整性
+        const hasBasicData = data.basic && Object.values(data.basic).some(val => val);
+        const hasBWMData = data.bwm && (data.bwm.bestFactor || data.bwm.worstFactor);
+        const hasDEMATELData = (data.dematelDimension && Object.keys(data.dematelDimension).length > 0) || 
+                              (data.dematelFactor && Object.keys(data.dematelFactor).length > 0);
+        
+        console.log('數據完整性檢查:', {
+            hasBasicData,
+            hasBWMData,
+            hasDEMATELData,
+            basicData: data.basic,
+            bwmData: data.bwm,
+            dematelDimensionCount: data.dematelDimension ? Object.keys(data.dematelDimension).length : 0,
+            dematelFactorCount: data.dematelFactor ? Object.keys(data.dematelFactor).length : 0
+        });
+        
+        // 簡化的結果顯示，先測試基本功能
         container.innerHTML = `
             <div class="alert alert-success" role="alert">
-                <h4 class="alert-heading">問卷提交成功！</h4>
+                <h4 class="alert-heading">🎉 問卷提交成功！</h4>
                 <p>感謝您的參與，問卷數據已成功收集。</p>
                 <hr>
+                <p class="mb-0">問卷編號：<span class="survey-id">${surveyId}</span></p>
+                <p class="mb-0">提交時間：${new Date().toLocaleString('zh-TW')}</p>
                 <p class="mb-0">您填寫的數據如下：</p>
             </div>
             
             <div class="row">
                 <div class="col-md-6">
-                    <h4>基本資料</h4>
-                    <ul class="list-group">
-                        <li class="list-group-item">性別: ${data.basic.gender === 'male' ? '男' : data.basic.gender === 'female' ? '女' : '未填寫'}</li>
-                        <li class="list-group-item">年齡: ${data.basic.age || '未填寫'}</li>
-                        <li class="list-group-item">教育程度: ${data.basic.education || '未填寫'}</li>
-                        <li class="list-group-item">是否為電子製造業: ${data.basic.electronics_industry === 'yes' ? '是' : data.basic.electronics_industry === 'no' ? '否' : '未填寫'}</li>
-                        <li class="list-group-item">數位轉型相關年資: ${data.basic.experience || '未填寫'}</li>
-                    </ul>
+                    <div class="data-overview">
+                        <h4>📋 基本資料</h4>
+                        <ul class="list-group">
+                            <li class="list-group-item">性別: ${data.basic?.gender === 'male' ? '男' : data.basic?.gender === 'female' ? '女' : '未填寫'}</li>
+                            <li class="list-group-item">年齡: ${data.basic?.age || '未填寫'}</li>
+                            <li class="list-group-item">教育程度: ${data.basic?.education || '未填寫'}</li>
+                            <li class="list-group-item">是否為電子製造業: ${data.basic?.electronics_industry === 'yes' ? '是' : data.basic?.electronics_industry === 'no' ? '否' : '未填寫'}</li>
+                            <li class="list-group-item">數位轉型相關年資: ${data.basic?.experience || '未填寫'}</li>
+                        </ul>
+                    </div>
                 </div>
                 <div class="col-md-6">
-                    <h4>BWM 結果</h4>
-                    <ul class="list-group">
-                        <li class="list-group-item">最重要因素: ${data.bwm.bestFactor ? factors[data.bwm.bestFactor].name : '未選擇'}</li>
-                        <li class="list-group-item">最不重要因素: ${data.bwm.worstFactor ? factors[data.bwm.worstFactor].name : '未選擇'}</li>
-                        <li class="list-group-item">比較數量: ${Object.keys(data.bwm.bestComparisons).length + Object.keys(data.bwm.worstComparisons).length}</li>
-                    </ul>
+                    <div class="data-overview">
+                        <h4>⚖️ BWM 結果</h4>
+                        <ul class="list-group">
+                            <li class="list-group-item">最重要因素: ${data.bwm?.bestFactor ? factors[data.bwm.bestFactor]?.name || data.bwm.bestFactor : '未選擇'}</li>
+                            <li class="list-group-item">最不重要因素: ${data.bwm?.worstFactor ? factors[data.bwm.worstFactor]?.name || data.bwm.worstFactor : '未選擇'}</li>
+                            <li class="list-group-item">比較數量: ${(data.bwm?.bestComparisons ? Object.keys(data.bwm.bestComparisons).length : 0) + (data.bwm?.worstComparisons ? Object.keys(data.bwm.worstComparisons).length : 0)}</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
             
             <div class="row mt-3">
                 <div class="col-12">
-                    <h4>DEMATEL 影響關係</h4>
-                    <p>構面影響關係矩陣已收集完成，共 ${Object.keys(data.dematelDimension).length} 個構面關係評分。</p>
-                    <p>因素影響關係矩陣已收集完成，共 ${Object.keys(data.dematelFactor).length} 個因素關係評分。</p>
+                    <div class="data-overview">
+                        <h4>🔗 DEMATEL 影響關係</h4>
+                        <p>構面影響關係矩陣已收集完成，共 ${data.dematelDimension ? Object.keys(data.dematelDimension).length : 0} 個構面關係評分。</p>
+                        <p>因素影響關係矩陣已收集完成，共 ${data.dematelFactor ? Object.keys(data.dematelFactor).length : 0} 個因素關係評分。</p>
+                    </div>
                 </div>
             </div>
             
-            <div class="mt-4">
-                <button class="btn btn-primary me-2" onclick="location.reload()">重新填寫問卷</button>
-                <button class="btn btn-secondary me-2" onclick="downloadData(surveyData)">下載數據</button>
+            <div class="result-actions mt-3">
+                <button class="btn btn-primary me-2" onclick="location.reload()">🔄 重新填寫問卷</button>
+                <button class="btn btn-secondary me-2" onclick="downloadData()">📥 下載數據</button>
+                <button class="btn btn-info me-2" onclick="sendEmailData()">📧 寄送數據</button>
             </div>
         `;
         
         console.log('結果顯示完成');
+        
+        // 在結果顯示完成後，開始上傳到Google Sheet
+        // 使用setTimeout確保結果頁面先顯示出來
+        setTimeout(() => {
+            console.log('開始上傳數據到Google Sheet...');
+            uploadToGoogleSheet(data, surveyId);
+        }, 100);
         
     } catch (error) {
         console.error('顯示結果時發生錯誤:', error);
@@ -2672,14 +2933,23 @@ function displayResults(data) {
             <div class="alert alert-danger" role="alert">
                 <h4 class="alert-heading">顯示結果時發生錯誤</h4>
                 <p>${error.message}</p>
+                <hr>
+                <p class="mb-0">錯誤詳情：</p>
+                <pre>${error.stack}</pre>
             </div>
         `;
     }
 }
 
 // 改進下載數據功能
-function downloadData(data) {
+function downloadData() {
     try {
+        const data = window.currentSurveyData;
+        if (!data) {
+            alert('沒有可下載的數據');
+            return;
+        }
+        
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -2697,8 +2967,14 @@ function downloadData(data) {
 }
 
 // 寄送數據至 Gmail 功能
-function sendEmailData(data) {
+function sendEmailData() {
     try {
+        const data = window.currentSurveyData;
+        if (!data) {
+            alert('沒有可寄送的數據');
+            return;
+        }
+        
         // 格式化郵件內容
         const emailSubject = encodeURIComponent('數位轉型影響因素研究問卷數據');
         const emailBody = formatEmailContent(data);
@@ -3127,10 +3403,15 @@ function hasSavedAnswers() {
 
 // 自动保存答案的包装函数
 function autoSaveAnswers() {
+    console.log('=== autoSaveAnswers() 開始 ===');
     saveAllAnswers();
+    console.log('saveAllAnswers() 完成');
     
     // 更新題目導航狀態
+    console.log('開始更新題目導航狀態...');
     updateAllQuestionNavigation();
+    console.log('updateAllQuestionNavigation() 完成');
+    console.log('=== autoSaveAnswers() 完成 ===');
 }
 
 // 页面加载时恢复答案
@@ -3192,10 +3473,16 @@ function updateAllQuestionNavigation() {
 
 // 更新BWM題目導航狀態
 function updateBWMQuestionNavigation() {
+    console.log('=== updateBWMQuestionNavigation() 開始 ===');
     const questionList = document.getElementById('bwm-question-list');
     if (questionList) {
+        console.log('找到bwm-question-list元素，更新導航');
         questionList.innerHTML = generateBWMQuestionList();
+        console.log('BWM導航更新完成');
+    } else {
+        console.warn('找不到bwm-question-list元素');
     }
+    console.log('=== updateBWMQuestionNavigation() 完成 ===');
 }
 
 // 更新構面題目導航狀態
@@ -3213,3 +3500,72 @@ function updateFactorQuestionNavigation() {
         questionList.innerHTML = generateFactorQuestionList();
     }
 }
+
+// 調試函數：手動顯示提交按鈕
+// function debugShowSubmitButton() {
+//     console.log('手動顯示提交按鈕...');
+//     const submitBtn = document.getElementById('step5-submit');
+//     if (submitBtn) {
+//         submitBtn.style.display = 'inline-block';
+//         submitBtn.disabled = false;
+//         submitBtn.classList.add('btn-success');
+//         submitBtn.classList.remove('btn-secondary');
+//         
+//         // 確保按鈕可以點擊
+//         submitBtn.onclick = function(e) {
+//             console.log('提交按鈕被點擊 - 直接觸發表單提交');
+//             e.preventDefault();
+//             const form = document.getElementById('questionnaireForm');
+//             if (form) {
+//                 form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+//             }
+//         };
+//         
+//         console.log('提交按鈕已手動顯示');
+//     } else {
+//         console.error('找不到step5-submit按鈕');
+//     }
+// }
+
+// 調試函數：檢查所有問題狀態
+// function debugCheckAllQuestions() {
+//     console.log('=== 調試檢查所有問題狀態 ===');
+//     console.log('factorQuestions:', factorQuestions);
+//     console.log('factorAnswers:', factorAnswers);
+//     console.log('currentFactorQuestion:', currentFactorQuestion);
+//     
+//     factorQuestions.forEach((question, index) => {
+//         const isAnswered = isFactorQuestionAnswered(index);
+//         console.log(`問題 ${index + 1} (${question.xKey}_${question.yKey}): ${isAnswered ? '已完成' : '未完成'}`);
+//     });
+//     
+//     const allAnswered = factorQuestions.every((_, index) => isFactorQuestionAnswered(index));
+//     console.log(`所有問題完成狀態: ${allAnswered}`);
+// }
+
+// 測試表單提交功能
+// function testFormSubmission() {
+//     console.log('=== 測試表單提交功能 ===');
+//     
+//     // 檢查表單元素
+//     const form = document.getElementById('questionnaireForm');
+//     console.log('表單元素:', form);
+//     
+//     // 檢查提交按鈕
+//     const submitBtn = document.getElementById('step5-submit');
+//     console.log('提交按鈕:', submitBtn);
+//     console.log('提交按鈕顯示狀態:', submitBtn ? submitBtn.style.display : '按鈕不存在');
+//     console.log('提交按鈕禁用狀態:', submitBtn ? submitBtn.disabled : '按鈕不存在');
+//     
+//     // 檢查事件監聽器
+//     if (form) {
+//         console.log('表單事件監聽器數量:', form.getEventListeners ? form.getEventListeners('submit').length : '無法檢查');
+//     }
+//     
+//     // 模擬提交事件
+//     if (form && submitBtn) {
+//         console.log('模擬提交事件...');
+//         const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+//         form.dispatchEvent(submitEvent);
+//     }
+// }
