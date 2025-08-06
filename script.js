@@ -990,6 +990,9 @@ function generateBestFactorComparison(container, question) {
     const ratingStandardDiv = document.createElement('div');
     ratingStandardDiv.className = 'mt-4';
     ratingStandardDiv.innerHTML = `
+        <div class="alert alert-warning mb-3">
+            <strong>備註：</strong>與最重要的因素相比，分數較高等於不重要的因素；分數較低等於重要因素
+        </div>
         <h6 class="text-primary mb-3">評估差異尺度說明：</h6>
         <div class="table-responsive">
             <table class="table table-sm table-bordered">
@@ -1227,6 +1230,9 @@ function generateWorstFactorComparison(container, question) {
     const ratingStandardDiv = document.createElement('div');
     ratingStandardDiv.className = 'mt-4';
     ratingStandardDiv.innerHTML = `
+        <div class="alert alert-warning mb-3">
+            <strong>備註：</strong>與最不重要的因素相比，分數較高等於重要因素；分數較低等於不重要因素
+        </div>
         <h6 class="text-primary mb-3">評估差異尺度說明：</h6>
         <div class="table-responsive">
             <table class="table table-sm table-bordered">
